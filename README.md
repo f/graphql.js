@@ -2,6 +2,13 @@
 
 > This is a simple library that uses jQuery's `$.ajax` method, `$.Deferred` and some utilities like `$.each`, and a very naive fragment implementation based on [**Richard Mosolgo**](http://github.com/rmosolgo)'s [**Using GraphQL Without Relay** post](http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/).
 
+### Features
+
+- No bullshit depended, just jQuery to use its `$.ajax` and some utilities.
+- Plug & Play.
+- Runs on most of the browsers.
+- You don't need to install Node.js ecosystem into your computer.
+
 ## Installation
 
 ```html
