@@ -34,4 +34,4 @@
       return defer
     }
   }
-(jQuery))
+}(jQuery))
