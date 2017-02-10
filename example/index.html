@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <script src="http://code.jquery.com/jquery-3.1.1.js"></script>
+    <script src="../jquery.graphql.js"></script>
+    <script>
+      var graph = $.graphql("http://localhost:3000/graphql", {
+        fragments: {
+          auth: `on User { token }`
+        }
+      })
+
+      graph.fragment({error: `on Error { messages }`})
+
+      var login = graph.query(`(@autotype) {
+        auth(email: $email, password: $password) {
+          ... auth
+          ... error
+        }
+      }`)
+
+      login({
+        email: "p@protel.com.tr",
+        password: "12345678",
+      }).always(function (response) {
+        console.log(response)
+      })
+    </script>
+  </head>
+  <body>
+    
+  </body>
+</html>

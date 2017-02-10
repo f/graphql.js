@@ -15,12 +15,15 @@ Create a simple connection to your GraphQL.
 
 ```js
 var graph = $.graphql("http://localhost:3000/graphql", {
-  // headers
-  "Access-Token": "some-access-token"
-}, {
-  // fragments, you don't need to say `fragment name`.
-  auth: "on User { token }",
-  error: "on Error { messages }"
+  headers: {
+    // headers
+    "Access-Token": "some-access-token"
+  },
+  fragments: {
+    // fragments, you don't need to say `fragment name`.
+    auth: "on User { token }",
+    error: "on Error { messages }"
+  }
 })
 ```
 
@@ -29,7 +32,7 @@ var graph = $.graphql("http://localhost:3000/graphql", {
 `graph` will be a simple function that accepts `query` and `variables` as parameters.
 
 ```js
-graph(`query login($email: String!, $password: String!) {
+graph(`query ($email: String!, $password: String!) {
   auth(email: $email, password: $password) {
     ... auth # if you use any fragment, it will be added to the query.
     ... error
@@ -44,6 +47,76 @@ graph(`query login($email: String!, $password: String!) {
   // response is originally response.errors of query result
   console.log(error)
 })
+```
+
+## Prepare Query for Execution
+
+You can prepare queries for lazy execution.
+
+```js
+var login = graph(`query ($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`)
+
+// Call it later...
+login({
+  email: "john@doe.com",
+  password: "my-super-password"
+})
+```
+
+## Prefix Helpers
+
+You can prefix your queries by simply calling helper methods: `.query`, `.mutate` or `.subscribe`
+
+```js
+var login = graph.query(`($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`)
+
+var passwordUpdate = graph.mutate(`...`)
+var userAdded = graph.subscribe(`...`)
+```
+
+## Autotyping
+
+Declaring simple-typed (`String`, `Int`, `Boolean`) variables in query may be a
+little bothering to me. That's why I added an `@autotype` keyword to the processor.
+It detects and adds types to the query.
+
+```js
+var login = graph.query(`(@autotype) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`)
+
+login({
+  email: "john@doe.com", // It's String! obviously.
+  password: "my-super-password" // It is, too.
+})
+```
+
+This will create following query:
+
+```gql
+query ($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`
 ```
 
 ## License
