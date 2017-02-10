@@ -86,7 +86,7 @@ var passwordUpdate = graph.mutate(`...`)
 var userAdded = graph.subscribe(`...`)
 ```
 
-## Autotyping
+## Autotyping `@autotype`
 
 Declaring simple-typed (`String`, `Int`, `Boolean`) variables in query may be a
 little bothering to me. That's why I added an `@autotype` keyword to the processor.
@@ -117,6 +117,29 @@ query ($email: String!, $password: String!) {
     }
   }
 }`
+```
+
+## Adding Fragments Lazily
+
+You can add fragments lazily.
+
+```js
+// Adds a profile fragment
+graph.fragment({
+  profile: `on User {
+    id
+    name(full: true)
+    avatar
+  }`
+})
+
+var allUsers = graph.query(`{
+  allUsers {
+    ... profile
+  }
+}`)
+
+allUsers().then(...)
 ```
 
 ## License

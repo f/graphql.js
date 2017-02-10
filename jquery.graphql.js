@@ -52,12 +52,10 @@
     
     var sender = function (query) {
       var caller = function (variables, requestOptions) {
-        console.log(variables, requestOptions)
         if (!requestOptions) requestOptions = {}
         if (!variables) variables = {}
         var defer = $.Deferred()
         var fragmentedQuery = processQueryTypes(processQuery(query, fragments), variables)
-        console.info(fragmentedQuery)
         headers = $.extend((options.headers||{}), (requestOptions.headers||{}))
         $.ajax({
           type: "post",
