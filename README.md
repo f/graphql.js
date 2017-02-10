@@ -116,14 +116,59 @@ login({
 
 This will create following query:
 
-```gql
+```js
 query ($email: String!, $password: String!) {
   auth(email: $email, password: $password) {
     ... on User {
       token
     }
   }
-}`
+}
+```
+
+### A little bit advanced autotyping
+
+You can define custom types when defining variables by using a simple `"variable!Type"` notation:
+
+```js
+graph.fragment({registeredUser: `
+  ... on User {
+    id
+    name
+    token
+  }
+`})
+
+var register = graph.mutate(`(@autotype) {
+  userRegister(input: $input) {
+    ... registeredUser
+  }
+}`)
+
+register({
+  // variable name and type.
+  "input!UserRegisterInput": {
+    ...
+  }
+})
+```
+
+This will generate following query:
+
+```js
+mutation ($input: UserRegisterInput!) {
+  userRegister(input: $input) {
+    ... registeredUser
+  }
+}
+
+fragment on registeredUser {
+  ... on User {
+    id
+    name
+    token
+  }
+}
 ```
 
 ## Adding Fragments Lazily
