@@ -162,7 +162,7 @@ mutation ($input: UserRegisterInput!) {
   }
 }
 
-fragment on registeredUser {
+fragment registeredUser on User {
   ... on User {
     id
     name
