@@ -9,6 +9,25 @@
 - Runs on most of the browsers.
 - You don't need to install Node.js ecosystem into your computer.
 
+## Overview
+
+GraphQL based on a very simple HTTP transaction which sends a request to an endpoint
+with `query` and `variables`.
+
+Many libraries requires _complex stacks_ to make that simple request.
+In any project you don't use **React**, **Relay** you'll need a simpler
+client which manages your query and makes a simple request.
+
+```js
+// Connect...
+var graph = $.graphql("/graphql")
+
+// Query...
+graph(`query { allUsers {id, name} }`).then(function (users) {
+  console.log(users)
+})
+```
+
 ## Installation
 
 ```html
@@ -34,7 +53,7 @@ var graph = $.graphql("http://localhost:3000/graphql", {
 })
 ```
 
-## Execute Query
+## Executing Queries and Mutations
 
 `graph` will be a simple function that accepts `query` and `variables` as parameters.
 
@@ -56,9 +75,10 @@ graph(`query ($email: String!, $password: String!) {
 })
 ```
 
-## Prepare Query for Execution
+### Prepare Query for Lazy Execution
 
-You can prepare queries for lazy execution.
+You can prepare queries for lazy execution. It will allow you to reuse your queries with
+different variables without any hassle.
 
 ```js
 var login = graph(`query ($email: String!, $password: String!) {
@@ -76,7 +96,7 @@ login({
 })
 ```
 
-## Prefix Helpers
+### Prefix Helpers
 
 You can prefix your queries by simply calling helper methods: `.query`, `.mutate` or `.subscribe`
 
@@ -89,15 +109,15 @@ var login = graph.query(`($email: String!, $password: String!) {
   }
 }`)
 
-var passwordUpdate = graph.mutate(`...`)
-var userAdded = graph.subscribe(`...`)
+var increment = graph.mutate(`increment { state }`)
+var onIncrement = graph.subscribe(`onIncrement { state }`)
 ```
 
-## Autotyping `@autotype`
+### Autotyping with `@autotype`
 
-Declaring simple-typed (`String`, `Int`, `Boolean`) variables in query may be a
+Declaring simple-typed (`String`, `Int`, `Boolean`) variables in query were a
 little bothering to me. That's why I added an `@autotype` keyword to the processor.
-It detects and adds types to the query.
+It detects types from the variables and declares them in query automatically.
 
 ```js
 var login = graph.query(`(@autotype) {
@@ -126,30 +146,19 @@ query ($email: String!, $password: String!) {
 }
 ```
 
-### A little bit advanced autotyping
+### Advanced Autotyping
 
-You can define custom types when defining variables by using a simple `"variable!Type"` notation:
+You can define custom types when defining variables by using a simple `"variable!Type"` notation.
+It will help you to make more complex variables:
 
 ```js
-graph.fragment({registeredUser: `
-  ... on User {
-    id
-    name
-    token
-  }
-`})
-
 var register = graph.mutate(`(@autotype) {
-  userRegister(input: $input) {
-    ... registeredUser
-  }
+  userRegister(input: $input) { ... }
 }`)
 
 register({
   // variable name and type.
-  "input!UserRegisterInput": {
-    ...
-  }
+  "input!UserRegisterInput": { ... }
 })
 ```
 
@@ -157,23 +166,57 @@ This will generate following query:
 
 ```js
 mutation ($input: UserRegisterInput!) {
-  userRegister(input: $input) {
-    ... registeredUser
-  }
-}
-
-fragment registeredUser on User {
-  ... on User {
-    id
-    name
-    token
-  }
+  userRegister(input: $input) { ... }
 }
 ```
 
-## Adding Fragments Lazily
+## Fragments
 
-You can add fragments lazily.
+Fragments make your GraphQL more DRY and improves reusability. With `.fragment` method, you'll
+manage your fragments easily.
+
+### Simple Fragments
+
+While constructing your endpoint, you can predefine all of your fragments.
+
+```js
+var graph = $.graphql("/graphql", {
+  fragments: {
+    userInfo: `on User { id, name, surname, avatar }`
+  }
+})
+```
+
+And you can use your fragments in your queries. The query will pick your fragments and
+will add them to the bottom of your query.
+
+```js
+graph.query(`{ allUsers { ...userInfo } }`)
+```
+
+### Nested Fragments
+
+You can nest your fragments to keep them organized/namespaced.
+
+```js
+var graph = $.graphql("/graphql", {
+  fragments: {
+    user: {
+      info: `on User { id, name, surname, avatar }`
+    }
+  }
+}) 
+```
+
+Accessing them is also intuitive:
+
+```js
+graph.query(`{ allUsers { ...user.info } }`)
+```
+
+### Lazy Fragments
+
+You can also add fragments lazily. So you can use your fragments more modular.
 
 ```js
 // Adds a profile fragment
@@ -193,6 +236,33 @@ var allUsers = graph.query(`{
 
 allUsers().then(...)
 ```
+
+Also you can add **nested fragments** lazily, too:
+
+```js
+graph.fragment({
+  login: {
+    error: `on LoginError {
+      reason
+    }`
+  }
+})
+
+graph.fragment({
+  something: {
+    error: `on SomeError {
+      messages
+    }`
+  }
+})
+
+graph.query(`{ login {... login.error } }`)
+graph.query(`{ something {... something.error } }`)
+```
+
+## TODO
+
+ [] Remove jQuery dependencies and rename project.
 
 ## License
 

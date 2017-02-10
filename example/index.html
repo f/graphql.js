@@ -5,16 +5,18 @@
     <script>
       var graph = $.graphql("http://localhost:3000/graphql", {
         fragments: {
-          auth: `on User { token }`
+          login: {
+            auth: `on User { token }`
+          }
         }
       })
 
-      graph.fragment({error: `on Error { messages }`})
+      graph.fragment({x: {y: {error: `on Error { messages }`}}})
 
       var login = graph.query(`(@autotype) {
         auth(email: $email, password: $password) {
-          ... auth
-          ... error
+          ... login.auth
+          ... x.y.error
         }
       }`)
 
