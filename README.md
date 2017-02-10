@@ -262,7 +262,7 @@ graph.query(`{ something {... something.error } }`)
 
 ## TODO
 
- [] Remove jQuery dependencies and rename project.
+ - [ ] Remove jQuery dependencies and rename project.
 
 ## License
 
