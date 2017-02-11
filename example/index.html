@@ -1,34 +1,32 @@
 <html>
   <head>
     <script src="http://code.jquery.com/jquery-3.1.1.js"></script>
-    <script src="../jquery.graphql.js"></script>
+    <script src="../jquery.graphql.min.js"></script>
     <script>
       var graph = $.graphql("http://localhost:3000/graphql", {
         fragments: {
-          todo: `on TodoItem {
-            isCompleted
-            text
-          }`
+          login: {
+            auth: "on User {token}"
+          }
         }
       })
 
-      var listTodos = graph.query(`{ allTodos(orderBy: "date") { ...todo } }`)
+      // var listTodos = graph.query(`{ allTodos(orderBy: "date") { ...todo } }`)
 
       // graph.fragment({x: {y: {error: `on Error { messages }`}}})
 
-      // var login = graph.query(`(@autotype) {
-      //   auth(email: $email, password: $password) {
-      //     ... login.auth
-      //     ... x.y.error
-      //   }
-      // }`)
+      var login = graph.query(`(@autotype) {
+        auth(email: $email, password: $password) {
+          ... login.auth
+        }
+      }`)
 
-      // login({
-      //   email: "p@protel.com.tr",
-      //   password: "12345678",
-      // }).always(function (response) {
-      //   console.log(response)
-      // })
+      login({
+        email: "p@protel.com.tr",
+        password: "12345678",
+      }).always(function (response) {
+        console.log(response)
+      })
     </script>
   </head>
   <body>
