@@ -30,6 +30,14 @@ graph.run(`query { allUsers {id, name} }`).then(function (users) {
 
 ## Installation
 
+You can download `jquery.graphql.js` directly, or you can use **Bower**.
+
+```
+bower install jquery-graphql
+```
+
+Then you can call it from your HTML.
+
 ```html
 <script src="/path/to/jquery.js"></script>
 <script src="/path/to/jquery-graphql.js"></script>
