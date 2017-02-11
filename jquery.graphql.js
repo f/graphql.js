@@ -134,6 +134,15 @@
       return fragments
     }
 
+    $.each(['mutate', 'query', 'subscription'], function (_, m) {
+      sender[m].run = function (query) {
+        return sender[m](query, {})
+      }
+    })
+    sender.run = function (query) {
+      return sender(query, {})
+    }
+
     return sender
   }
 }(jQuery))

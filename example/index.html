@@ -5,27 +5,30 @@
     <script>
       var graph = $.graphql("http://localhost:3000/graphql", {
         fragments: {
-          login: {
-            auth: `on User { token }`
-          }
+          todo: `on TodoItem {
+            isCompleted
+            text
+          }`
         }
       })
 
-      graph.fragment({x: {y: {error: `on Error { messages }`}}})
+      var listTodos = graph.query(`{ allTodos(orderBy: "date") { ...todo } }`)
 
-      var login = graph.query(`(@autotype) {
-        auth(email: $email, password: $password) {
-          ... login.auth
-          ... x.y.error
-        }
-      }`)
+      // graph.fragment({x: {y: {error: `on Error { messages }`}}})
 
-      login({
-        email: "p@protel.com.tr",
-        password: "12345678",
-      }).always(function (response) {
-        console.log(response)
-      })
+      // var login = graph.query(`(@autotype) {
+      //   auth(email: $email, password: $password) {
+      //     ... login.auth
+      //     ... x.y.error
+      //   }
+      // }`)
+
+      // login({
+      //   email: "p@protel.com.tr",
+      //   password: "12345678",
+      // }).always(function (response) {
+      //   console.log(response)
+      // })
     </script>
   </head>
   <body>

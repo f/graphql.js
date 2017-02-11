@@ -23,7 +23,7 @@ client which manages your query and makes a simple request.
 var graph = $.graphql("/graphql")
 
 // Query...
-graph(`query { allUsers {id, name} }`).then(function (users) {
+graph.run(`query { allUsers {id, name} }`).then(function (users) {
   console.log(users)
 })
 ```
@@ -94,6 +94,24 @@ login({
   email: "john@doe.com",
   password: "my-super-password"
 })
+```
+
+#### Direct Execution with `.run`
+
+If your query doesn't need any variable, it will generate a lazy execution query by default.
+If you want to run your query immediately, you have two following options:
+
+```js
+// 1st. create and run function.
+graph(`...`)()
+graph.query(`...`)()
+graph.mutate(`...`)()
+//...
+
+// 2nd. create and run function with `run` method.
+graph.run(`...`)
+graph.query.run(`...`)
+graph.mutate.run(`...`)
 ```
 
 ### Prefix Helpers
