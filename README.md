@@ -33,6 +33,9 @@ graph.run(`query { allUsers {id, name} }`).then(function (users) {
 
 You can download `jquery.graphql.js` directly, or you can use **Bower**.
 
+- [Development Version - 4.4kb](https://raw.githubusercontent.com/f/jquery-graphql/master/jquery.graphql.js)
+- [Production Version - 1.9kb](https://raw.githubusercontent.com/f/jquery-graphql/master/jquery.graphql.min.js)
+
 ```
 bower install jquery-graphql
 ```
