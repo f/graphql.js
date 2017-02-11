@@ -41,6 +41,7 @@ Create a simple connection to your GraphQL.
 
 ```js
 var graph = $.graphql("http://localhost:3000/graphql", {
+  method: "POST", // POST by default.
   headers: {
     // headers
     "Access-Token": "some-access-token"
@@ -102,17 +103,19 @@ If your query doesn't need any variable, it will generate a lazy execution query
 If you want to run your query immediately, you have two following options:
 
 ```js
-// 1st. create and run function.
+// 1st option. create and run function.
 graph(`...`)()
 graph.query(`...`)()
 graph.mutate(`...`)()
 //...
 
-// 2nd. create and run function with `run` method.
+// 2nd option. create and run function with `run` method.
 graph.run(`...`)
 graph.query.run(`...`)
 graph.mutate.run(`...`)
 ```
+
+> **I don't recommend** using this. Using it too much may break your DRY. Use lazy execution as much as possible.
 
 ### Prefix Helpers
 
@@ -284,4 +287,24 @@ graph.query(`{ something {... something.error } }`)
 
 ## License
 
-MIT.
+MIT License
+
+Copyright (c) 2017 Fatih Kadir Akın
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
