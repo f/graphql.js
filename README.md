@@ -41,6 +41,7 @@ Create a simple connection to your GraphQL.
 
 ```js
 var graph = $.graphql("http://localhost:3000/graphql", {
+  method: "POST", // POST by default.
   headers: {
     // headers
     "Access-Token": "some-access-token"
