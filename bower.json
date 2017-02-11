@@ -1,5 +1,6 @@
 {
   "name": "jquery-graphql",
+  "version": "0.1.0",
   "homepage": "https://github.com/f/jquery-graphql",
   "authors": [
     "Fatih Kadir Akın <fatihkadirakin@gmail.com>"
