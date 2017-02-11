@@ -1,7 +1,7 @@
 # jQuery GraphQL
 [![Bower version](https://badge.fury.io/bo/jquery-graphql.svg)](http://badge.fury.io/bo/jquery-graphql)
 
-> This is a simple library that uses jQuery's `$.ajax` method, `$.Deferred` and some utilities like `$.each`, and a very naive fragment implementation based on [**Richard Mosolgo**](http://github.com/rmosolgo)'s [**Using GraphQL Without Relay** post](http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/).
+> This is a simple library that uses jQuery's `$.ajax` method, `$.Deferred` and some utilities like `$.each`, and a very naive fragment implementation. Based on [**Richard Mosolgo**](http://github.com/rmosolgo)'s [**Using GraphQL Without Relay** post](http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/).
 
 ### Features
 
