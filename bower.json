@@ -1,0 +1,27 @@
+{
+  "name": "jquery-graphql",
+  "homepage": "https://github.com/f/jquery-graphql",
+  "authors": [
+    "Fatih Kadir Akın <fatihkadirakin@gmail.com>"
+  ],
+  "description": "GraphQL Client for jQuery",
+  "main": "jquery.graphql.js",
+  "keywords": [
+    "graphql",
+    "graphql-client",
+    "jquery",
+    "relay",
+    "graphql-rails"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.1.1"
+  }
+}
