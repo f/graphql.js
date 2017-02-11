@@ -103,17 +103,19 @@ If your query doesn't need any variable, it will generate a lazy execution query
 If you want to run your query immediately, you have two following options:
 
 ```js
-// 1st. create and run function.
+// 1st option. create and run function.
 graph(`...`)()
 graph.query(`...`)()
 graph.mutate(`...`)()
 //...
 
-// 2nd. create and run function with `run` method.
+// 2nd option. create and run function with `run` method.
 graph.run(`...`)
 graph.query.run(`...`)
 graph.mutate.run(`...`)
 ```
+
+> **I don't recommend** using this. Using it too much may break your DRY. Use lazy execution as much as possible.
 
 ### Prefix Helpers
 
