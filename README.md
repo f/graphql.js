@@ -1,11 +1,9 @@
-# jQuery GraphQL
-[![Bower version](https://badge.fury.io/bo/jquery-graphql.svg)](http://badge.fury.io/bo/jquery-graphql)
-
-> This is a simple library that uses jQuery's `$.ajax` method, `$.Deferred` and some utilities like `$.each`, and a very naive fragment implementation. Based on [**Richard Mosolgo**](http://github.com/rmosolgo)'s [**Using GraphQL Without Relay** post](http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/).
+# GraphQLClient.js
+[![Bower version](https://badge.fury.io/bo/graphql-client.svg)](http://badge.fury.io/bo/graphql-client)
 
 ### Features
 
-- No bullshit depended, just jQuery to use its `$.ajax` and some utilities.
+- Nothing depended, plain vanilla JavaScript.
 - Plug & Play.
 - Runs on most of the browsers.
 - You don't need to install Node.js ecosystem into your computer.
@@ -21,7 +19,7 @@ client which manages your query and makes a simple request.
 
 ```js
 // Connect...
-var graph = $.graphql("/graphql")
+var graph = new GraphQLClient("/graphql")
 
 // Query...
 graph.run(`query { allUsers {id, name} }`).then(function (users) {
@@ -31,20 +29,19 @@ graph.run(`query { allUsers {id, name} }`).then(function (users) {
 
 ## Installation
 
-You can download `jquery.graphql.js` directly, or you can use **Bower**.
+You can download `graphql-client.js` directly, or you can use **Bower**.
 
-- [Development Version - 4.4kb](https://raw.githubusercontent.com/f/jquery-graphql/master/jquery.graphql.js)
-- [Production Version - 1.9kb](https://raw.githubusercontent.com/f/jquery-graphql/master/jquery.graphql.min.js)
+- [Development Version - 4.4kb](https://raw.githubusercontent.com/f/jquery-graphql/master/graphql-client.js)
+- [Production Version - 1.9kb](https://raw.githubusercontent.com/f/jquery-graphql/master/graphql-client.min.js)
 
 ```
-bower install jquery-graphql
+bower install graphql-client
 ```
 
 Then you can call it from your HTML.
 
 ```html
-<script src="/path/to/jquery.js"></script>
-<script src="/path/to/jquery-graphql.js"></script>
+<script src="/path/to/graphql-client.js"></script>
 ```
 
 ## Connection
@@ -52,7 +49,7 @@ Then you can call it from your HTML.
 Create a simple connection to your GraphQL.
 
 ```js
-var graph = $.graphql("http://localhost:3000/graphql", {
+var graph = new GraphQLClient("http://localhost:3000/graphql", {
   method: "POST", // POST by default.
   headers: {
     // headers
@@ -213,7 +210,7 @@ manage your fragments easily.
 While constructing your endpoint, you can predefine all of your fragments.
 
 ```js
-var graph = $.graphql("/graphql", {
+var graph = new GraphQLClient("/graphql", {
   fragments: {
     userInfo: `on User { id, name, surname, avatar }`
   }
@@ -232,7 +229,7 @@ graph.query(`{ allUsers { ...userInfo } }`)
 You can nest your fragments to keep them organized/namespaced.
 
 ```js
-var graph = $.graphql("/graphql", {
+var graph = new GraphQLClient("/graphql", {
   fragments: {
     user: {
       info: `on User { id, name, surname, avatar }`
@@ -292,10 +289,6 @@ graph.fragment({
 graph.query(`{ login {... login.error } }`)
 graph.query(`{ something {... something.error } }`)
 ```
-
-## TODO
-
- - [ ] Remove jQuery dependencies and rename project.
 
 ## License
 

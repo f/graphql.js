@@ -1,2 +1,7 @@
+.PHONY: test
+
 build:
-	google-closure-compiler-js --createSourceMap=true jquery.graphql.js > jquery.graphql.min.js
+	google-closure-compiler-js --createSourceMap=true graphql-client.js > graphql-client.min.js
+
+test:
+	node test/test.js

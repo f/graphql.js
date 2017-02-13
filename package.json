@@ -1,0 +1,30 @@
+{
+  "name": "graphql-client",
+  "version": "0.2.0",
+  "description": "GraphQL Client for JavaScript",
+  "main": "graphql-client.js",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/f/graphql-client.git"
+  },
+  "keywords": [
+    "graphql",
+    "graphql-client",
+    "jquery",
+    "relay",
+    "graphql-rails"
+  ],
+  "author": "Fatih Kadir Akın <fatihkadirakin@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/f/graphql-client/issues"
+  },
+  "homepage": "https://github.com/f/graphql-client#readme"
+}

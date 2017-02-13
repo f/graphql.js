@@ -1,9 +1,8 @@
 <html>
   <head>
-    <script src="http://code.jquery.com/jquery-3.1.1.js"></script>
-    <script src="../jquery.graphql.js"></script>
+    <script src="../graphql-client.js"></script>
     <script>
-      var graph = $.graphql("http://localhost:3000/graphql", {
+      var graph = new GraphQLClient("http://localhost:3000/graphql", {
         fragments: {
           login: {
             auth: "on User {token}"
@@ -15,16 +14,29 @@
 
       // graph.fragment({x: {y: {error: `on Error { messages }`}}})
 
+      graph.fragment({
+        fatih: {
+          a: "on Error {messages}"
+        }
+      })
+
+      graph.fragment({
+        fatih: {
+          b: "on Error {messages}"
+        }
+      })
+
       var login = graph.query(`(@autotype) {
         auth(email: $email, password: $password) {
           ... login.auth
+          ... fatih.b
         }
       }`)
 
       login({
         email: "p@protel.com.tr",
         password: "12345678",
-      }).always(function (response) {
+      }).then(function (response) {
         console.log(response)
       })
     </script>

@@ -1,11 +1,11 @@
 {
-  "name": "jquery-graphql",
-  "homepage": "https://github.com/f/jquery-graphql",
+  "name": "graphql-client",
+  "homepage": "https://github.com/f/graphql-client",
   "authors": [
     "Fatih Kadir Akın <fatihkadirakin@gmail.com>"
   ],
-  "description": "GraphQL Client for jQuery",
-  "main": "jquery.graphql.js",
+  "description": "GraphQL Client for JavaScript",
+  "main": "graphql-client.min.js",
   "keywords": [
     "graphql",
     "graphql-client",
