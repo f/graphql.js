@@ -293,6 +293,41 @@ graph.query(`{ login {... login.error } }`)
 graph.query(`{ something {... something.error } }`)
 ```
 
+## ToDo Example
+
+A pseudo CRUD ToDo app example code to show how to use GraphQL.js.
+
+```js
+var graph = new GraphQLClient("/graphql", {
+  fragments: {
+    todo: `on Todo {id, text, isCompleted}`
+  }
+})
+
+function getTodos() {
+  return graph.query(`{ allTodos { ...todo } }`)
+}
+
+function addTodo(text) {
+  return graph.mutate(`(@autotype) { todoAdd(text: $text) { ...todo } }`, {
+    text: text
+  })
+}
+
+function setTodo(id, isCompleted) {
+  return graph.mutate(`(@autotype) { todoComplete(id: $id, status: $isCompleted) { ...todo } }`, {
+    id: id,
+    isCompleted: isCompleted
+  })
+}
+
+function removeTodo(id) {
+  return graph.mutate(`(@autotype) { todoRemove(id: $id) { success } }`, {
+    id: id
+  })
+}
+```
+
 ## License
 
 MIT License
