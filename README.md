@@ -43,7 +43,7 @@ npm install graphql.js # via NPM
 Then you can call it from your HTML.
 
 ```html
-<script src="/path/to/graphql-client.js"></script>
+<script src="/path/to/graphql.js"></script>
 ```
 
 ## Connection
