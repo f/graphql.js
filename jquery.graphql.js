@@ -1,101 +1,127 @@
-!(function ($) {
+var GraphQLClient = (function ($) {
+  function GraphQLClient(url, options) {
+    if (!options)
+      options = {}
+    
+    if (!options.fragments)
+      options.fragments = {}
 
-  var N_FRAG_SEP = "_"
+    this.options = options
+    this._fragments = this.buildFragments(options.fragments)
+    this._sender = this.createSenderFunction(url, this._fragments)
+    this.createHelpers(this._sender)
+  }
 
-  function flatten(object) {
-    var prefix = arguments[1] || "", out = arguments[2] || {}, name;
+  // "fragment auth.login" will be "fragment auth_login"
+  GraphQLClient.FRAGMENT_SEPERATOR = "_"
+
+  // The autotype keyword.
+  GraphQLClient.AUTOTYPE_PATTERN = /\(@autotype\)/
+
+  // Flattens nested object
+  /*
+   * {a: {b: {c: 1, d: 2}}} => {"a.b.c": 1, "a.b.d": 2}
+   */
+  GraphQLClient.prototype.flatten = function (object) {
+    var prefix = arguments[1] || "", out = arguments[2] || {}, name
     for (name in object) {
       if (object.hasOwnProperty(name)) {
         typeof object[name] == "object"
-          ? flatten(object[name], prefix + name + N_FRAG_SEP, out)
+          ? this.flatten(object[name], prefix + name + GraphQLClient.FRAGMENT_SEPERATOR, out)
           : out[prefix + name] = object[name]
       }
     }
     return out
   }
 
-  function fragmentPath(fragments, path) {
-    var fn = new Function("fragments", "return fragments." + path.replace(/\./g, N_FRAG_SEP))
-    var obj = fn(fragments)
+  // Gets path from object
+  /*
+   * {a: {b: {c: 1, d: 2}}}, "a.b.c" => 1
+   */
+  GraphQLClient.prototype.fragmentPath = function (fragments, path) {
+    var getter = new Function("fragments", "return fragments." + path.replace(/\./g, GraphQLClient.FRAGMENT_SEPERATOR))
+    var obj = getter(fragments)
     if (!obj || typeof obj != "string") {
       throw "Fragment " + path + " not found"
     }
     return obj
   }
 
-  function processQuery(query, fragments) {
+  GraphQLClient.prototype.processQuery = function (query, fragments) {
+    var that = this
     var fragmentRegexp = /\.\.\.\s*([A-Za-z0-9\.]+)/g
-    var usedFragments = $.map(query.match(fragmentRegexp), function (fragment) {
+    var collectedFragments = query.match(fragmentRegexp).map(function (fragment) {
       var path = fragment.replace(fragmentRegexp, function (_, $m) {return $m})
-      return fragmentPath(fragments, path)
+      return that.fragmentPath(fragments, path)
     })
     query = query.replace(fragmentRegexp, function (_, $m) {
-      return "..." + $m.split(".").join(N_FRAG_SEP)
+      return "..." + $m.split(".").join(GraphQLClient.FRAGMENT_SEPERATOR)
     })
-    return [query].concat(usedFragments).join("\n")
+    return [query].concat(collectedFragments).join("\n")
   }
 
-  function processQueryTypes(query, variables) {
+  GraphQLClient.prototype.autoType = function (query, variables) {
     var typeMap = {
       string: "String",
       number: "Int",
       boolean: "Boolean"
     }
-    return query.replace(/\(@autotype\)/, function () {
-      var types = $.map(variables, function (value, key) {
+    return query.replace(GraphQLClient.AUTOTYPE_PATTERN, function () {
+      var types = []
+      for (var key in variables) {
+        var value = variables[key]
         var keyAndType = key.split("!")
         var type = (keyAndType[1] || typeMap[typeof(value)])
         if (type) {
-          return "$" + keyAndType[0] + ": " + type + "!"
+          types.push("$" + keyAndType[0] + ": " + type + "!")
         }
-      }).join(", ")
+      }
+      types = types.join(", ")
       return "("+ types +")"
     })
   }
 
-  function processVariables(variables) {
+  GraphQLClient.prototype.cleanAutoTypeAnnotations = function (variables) {
     if (!variables) variables = {}
     var newVariables = {}
-    $.each(variables, function (key, value) {
+    for (var key in variables) {
+      var value = variables[key]
       var keyAndType = key.split("!")
       newVariables[keyAndType[0]] = value
-    })
+    }
     return newVariables
   }
 
-  function processFragments(fragments) {
-    fragments = flatten(fragments || {})
+  GraphQLClient.prototype.buildFragments = function (fragments) {
+    var that = this
+    fragments = this.flatten(fragments || {})
     var fragmentObject = {}
-    var nameStack = []
-    $.each(fragments, function (name, fragment) {
+    for (var name in fragments) {
+      var fragment = fragments[name]
       if (typeof fragment == "object") {
-        fragmentObject[name] = processFragments(fragment)
+        fragmentObject[name] = that.buildFragments(fragment)
       } else {
         fragmentObject[name] = "\nfragment " + name + " " + fragment
       }
-    })
+    }
     return fragmentObject
   }
 
-  $.graphql = function (url, options) {
-    if (!options) options = {}
-    if (!options.fragments) options.fragments = {}
-
-    var fragments = processFragments(options.fragments)
-    
-    var sender = function (query) {
+  GraphQLClient.prototype.createSenderFunction = function (url, fragments) {
+    var that = this
+    return function (query) {
       var caller = function (variables, requestOptions) {
         if (!requestOptions) requestOptions = {}
         if (!variables) variables = {}
         var defer = $.Deferred()
-        var fragmentedQuery = processQueryTypes(processQuery(query, fragments), variables)
-        headers = $.extend((options.headers||{}), (requestOptions.headers||{}))
+        var fragmentedQuery = that.autoType(that.processQuery(query, fragments), variables)
+        headers = $.extend((that.options.headers||{}), (requestOptions.headers||{}))
         $.ajax({
-          type: options.method || "post",
+          type: that.options.method || "post",
           url: url,
           headers: headers,
           dataType: "json",
-          data: {query: fragmentedQuery, variables: processVariables(variables)},
+          data: {query: fragmentedQuery, variables: that.cleanAutoTypeAnnotations(variables)},
           error: function (response) {
             defer.reject(response)
           },
@@ -116,7 +142,10 @@
       }
       return caller
     }
+  }
 
+  GraphQLClient.prototype.createHelpers = function (sender) {
+    var that = this
     function helper(query) {
       var caller = sender(this.prefix + " " + query)
       if (arguments.length > 1) {
@@ -126,23 +155,27 @@
       }
     }
 
-    sender.mutate = $.proxy(helper, {prefix: "mutation"})
-    sender.query = $.proxy(helper, {prefix: "query"})
-    sender.subscription = $.proxy(helper, {prefix: "subscription"})
-    sender.fragment = function (fragment) {
-      fragments = processFragments($.extend(true, options.fragments, fragment))
-      return fragments
+    this.mutate = helper.bind({prefix: "mutation"})
+    this.query = helper.bind({prefix: "query"})
+    this.subscription = helper.bind({prefix: "subscription"})
+    this.fragment = function (fragment) {
+      return that._fragments = that.buildFragments($.extend(true, that.options.fragments, fragment))
     }
 
-    $.each(['mutate', 'query', 'subscription'], function (_, m) {
-      sender[m].run = function (query) {
-        return sender[m](query, {})
+    var helperMethods = ['mutate', 'query', 'subscription']
+    helperMethods.forEach(function (m) {
+      that[m].run = function (query) {
+        return that[m](query, {})
       }
     })
-    sender.run = function (query) {
+    this.run = function (query) {
       return sender(query, {})
     }
-
-    return sender
   }
-}(jQuery))
+
+  $.graphql = function (url, options) {
+    return new GraphQLClient(url, options)
+  }
+
+  return GraphQLClient
+})(jQuery)
