@@ -32,8 +32,8 @@ graph.run(`query { allUsers {id, name} }`).then(function (users) {
 
 You can download `graphql.js` directly, or you can use **Bower**.
 
-- [Development Version - 4.4kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
-- [Production Version - 1.9kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
+- [Development Version - 8kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
+- [Production Version - 8kb (including ES6 polyfills)](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
 
 ```bash
 bower install graphql.js # via bower
