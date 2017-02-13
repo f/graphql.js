@@ -1,7 +1,7 @@
 .PHONY: test
 
 build:
-	google-closure-compiler-js graphql.js > graphql.min.js
+	uglify -s graphql.js -o graphql.min.js
 
 test:
 	node test/test.js
