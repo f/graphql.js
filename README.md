@@ -35,7 +35,7 @@ You can download `graphql.js` directly, or you can use **Bower**.
 - [Development Version - 4.4kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
 - [Production Version - 1.9kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
 
-```
+```bash
 bower install graphql.js # via bower
 npm install graphql.js # via NPM
 ```
