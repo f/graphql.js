@@ -1,5 +1,5 @@
 var assert = require('assert')
-var GraphQLClient = require('../graphql-client.min.js')
+var GraphQLClient = require('../graphql.js')
 
 var client = new GraphQLClient(null, {
   method: "put",
