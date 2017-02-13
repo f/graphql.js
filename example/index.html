@@ -1,11 +1,11 @@
 <html>
   <head>
-    <script src="../graphql.js"></script>
+    <script src="../graphql.min.js"></script>
     <script>
       var graph = new GraphQLClient("http://localhost:3000/graphql", {
         fragments: {
           login: {
-            auth: "on User {token}"
+            auth: "on User {token, hasPin}"
           }
         }
       })
