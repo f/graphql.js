@@ -1,5 +1,6 @@
-# GraphQLClient.js
-[![Bower version](https://badge.fury.io/bo/graphql-client.svg)](http://badge.fury.io/bo/graphql-client)
+# GraphQL.js
+[![Bower version](https://badge.fury.io/bo/graphql.js.svg)](http://badge.fury.io/bo/graphql.js)
+[![NPM version](https://badge.fury.io/js/graphql.js.svg)](http://badge.fury.io/js/graphql.js)
 
 ### Features
 
@@ -29,19 +30,20 @@ graph.run(`query { allUsers {id, name} }`).then(function (users) {
 
 ## Installation
 
-You can download `graphql-client.js` directly, or you can use **Bower**.
+You can download `graphql.js` directly, or you can use **Bower**.
 
-- [Development Version - 4.4kb](https://raw.githubusercontent.com/f/jquery-graphql/master/graphql-client.js)
-- [Production Version - 1.9kb](https://raw.githubusercontent.com/f/jquery-graphql/master/graphql-client.min.js)
+- [Development Version - 4.4kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
+- [Production Version - 1.9kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
 
-```
-bower install graphql-client
+```bash
+bower install graphql.js # via bower
+npm install graphql.js # via NPM
 ```
 
 Then you can call it from your HTML.
 
 ```html
-<script src="/path/to/graphql-client.js"></script>
+<script src="/path/to/graphql.js"></script>
 ```
 
 ## Connection
