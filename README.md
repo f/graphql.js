@@ -21,10 +21,13 @@ client which manages your query and makes a simple request.
 
 ```js
 // Connect...
-var graph = new GraphQLClient("/graphql")
+var graph = graphql("/graphql")
 
-// Query...
-graph.run(`query { allUsers {id, name} }`).then(function (users) {
+// Prepare...
+var allUsers = graph(`query { allUsers {id, name} }`)
+
+// Run...
+allUsers().then(function (users) {
   console.log(users)
 })
 ```
@@ -52,7 +55,7 @@ Then you can call it from your HTML.
 Create a simple connection to your GraphQL.
 
 ```js
-var graph = new GraphQLClient("http://localhost:3000/graphql", {
+var graph = graphql("http://localhost:3000/graphql", {
   method: "POST", // POST by default.
   headers: {
     // headers
@@ -109,10 +112,10 @@ login({
 })
 ```
 
-#### Direct Execution with `.run`
+#### Direct Execution with `.run` and ES6 Template Tag
 
 If your query doesn't need any variable, it will generate a lazy execution query by default.
-If you want to run your query immediately, you have two following options:
+If you want to run your query immediately, you have three following options:
 
 ```js
 // 1st option. create and run function.
@@ -125,6 +128,11 @@ graph.mutate(`...`)()
 graph.run(`...`)
 graph.query.run(`...`)
 graph.mutate.run(`...`)
+
+// 3rd option. create and run function with template tag.
+graph`...`
+graph.query`...`
+graph.mutate`...`
 ```
 
 > **I don't recommend** using this. Using it too much may break your DRY. Use lazy execution as much as possible.
@@ -142,8 +150,8 @@ var login = graph.query(`($email: String!, $password: String!) {
   }
 }`)
 
-var increment = graph.mutate(`increment { state }`)
-var onIncrement = graph.subscribe(`onIncrement { state }`)
+var increment = graph.mutate`increment { state }`
+var onIncrement = graph.subscribe`onIncrement { state }`
 ```
 
 ### Autotyping with `@autotype`
@@ -213,7 +221,7 @@ manage your fragments easily.
 While constructing your endpoint, you can predefine all of your fragments.
 
 ```js
-var graph = new GraphQLClient("/graphql", {
+var graph = graphql("/graphql", {
   fragments: {
     userInfo: `on User { id, name, surname, avatar }`
   }
@@ -232,7 +240,7 @@ graph.query(`{ allUsers { ...userInfo } }`)
 You can nest your fragments to keep them organized/namespaced.
 
 ```js
-var graph = new GraphQLClient("/graphql", {
+var graph = graphql("/graphql", {
   fragments: {
     user: {
       info: `on User { id, name, surname, avatar }`
@@ -293,12 +301,38 @@ graph.query(`{ login {... login.error } }`)
 graph.query(`{ something {... something.error } }`)
 ```
 
+### Getting Fragments by Path
+
+You can call fragment string by using `.fragment` method. You have to pass path string to get the fragment.
+
+```js
+graph.fragment('login.error')
+```
+
+This will give you the matching fragment code:
+
+```js
+fragment login_error on LoginError {
+  reason
+}
+```
+
+### Using Fragments in Tag Query
+
+You can use fragments lazily using ES6 template tag queries.
+
+```js
+var userProfileToShow = graph.fragment('user.profile')
+
+graph`query { ... ${userProfileToShow} }`
+```
+
 ## ToDo Example
 
 A pseudo CRUD ToDo app example code to show how to use GraphQL.js.
 
 ```js
-var graph = new GraphQLClient("/graphql", {
+var graph = graphql("/graphql", {
   fragments: {
     todo: `on Todo {id, text, isCompleted}`
   }

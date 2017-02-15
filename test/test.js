@@ -1,7 +1,7 @@
 var assert = require('assert')
-var GraphQLClient = require('../graphql.js')
+var graphql = require('../graphql.js')
 
-var client = new GraphQLClient(null, {
+var client = graphql(null, {
   method: "put",
   fragments: {
     user: "on User {name}",
@@ -16,11 +16,12 @@ client.fragment({
     error: "on Error {messages}"
   }
 })
-
-assert.equal(client.options.method, "put")
-assert.equal(client._fragments.user, "\nfragment user on User {name}")
-assert.equal(client._fragments.auth_user, "\nfragment auth_user on User {token}")
-assert.equal(client._fragments.auth_error, "\nfragment auth_error on Error {messages}")
+assert.equal(typeof client, "function")
+assert.equal(client.fragment('auth.error'), "fragment auth_error on Error {messages}")
+assert.equal(client.getOptions().method, "put")
+assert.equal(client.fragments().user, "\nfragment user on User {name}")
+assert.equal(client.fragments().auth_user, "\nfragment auth_user on User {token}")
+assert.equal(client.fragments().auth_error, "\nfragment auth_error on Error {messages}")
 
 var queryIn = `query (@autotype) {
   user(name: $name, bool: $bool, int: $int) {
@@ -31,8 +32,8 @@ var queryIn = `query (@autotype) {
 
 var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!) {
   user(name: $name, bool: $bool, int: $int) {
-    ...user
-    ...auth_error
+    ... user
+    ... auth_error
   }
 }
 

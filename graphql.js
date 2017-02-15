@@ -41,8 +41,24 @@
     }
     xhr.send("query=" + escape(data.query) + "&variables=" + escape(JSON.stringify(data.variables)))
   }
+
+  function isTagCall(strings) {
+    return Object.prototype.toString.call(strings) == '[object Array]' && strings.raw
+  }
   
   function GraphQLClient(url, options) {
+    if (!(this instanceof GraphQLClient)) {
+      var client = new GraphQLClient(url, options, true)
+      var _lazy = client._sender
+      for (var m in client) {
+        if (typeof client[m] == 'function') {
+          _lazy[m] = client[m].bind(client)
+        }
+      }
+      return _lazy
+    } else if (arguments[2] !== true) {
+      throw "You cannot create GraphQLClient instance. Please call GraphQLClient as function."
+    }
     if (!options)
     options = {}
     
@@ -60,6 +76,8 @@
   
   // The autotype keyword.
   GraphQLClient.AUTOTYPE_PATTERN = /\(@autotype\)/
+
+  GraphQLClient.FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9\.\_]+)/g
   
   // Flattens nested object
   /*
@@ -84,7 +102,7 @@
   GraphQLClient.prototype.fragmentPath = function (fragments, path) {
     var getter = new Function("fragments", "return fragments." + path.replace(/\./g, GraphQLClient.FRAGMENT_SEPERATOR))
     var obj = getter(fragments)
-    if (!obj || typeof obj != "string") {
+    if (path != "on" && (!obj || typeof obj != "string")) {
       throw "Fragment " + path + " not found"
     }
     return obj
@@ -92,15 +110,18 @@
   
   GraphQLClient.prototype.processQuery = function (query, fragments) {
     var that = this
-    var fragmentRegexp = /\.\.\.\s*([A-Za-z0-9\.]+)/g
+    var fragmentRegexp = GraphQLClient.FRAGMENT_PATTERN
     var collectedFragments = (query.match(fragmentRegexp)||[]).map(function (fragment) {
       var path = fragment.replace(fragmentRegexp, function (_, $m) {return $m})
       return that.fragmentPath(fragments, path)
     })
     query = query.replace(fragmentRegexp, function (_, $m) {
-      return "..." + $m.split(".").join(GraphQLClient.FRAGMENT_SEPERATOR)
+      return "... " + $m.split(".").join(GraphQLClient.FRAGMENT_SEPERATOR)
     })
-    return [query].concat(collectedFragments).join("\n")
+    return [query].concat(collectedFragments.filter(function (fragment) {
+      // Remove already used fragments
+      return !query.match(fragment)
+    })).join("\n")
   }
   
   GraphQLClient.prototype.autoType = function (query, variables) {
@@ -157,6 +178,9 @@
   GraphQLClient.prototype.createSenderFunction = function (url) {
     var that = this
     return function (query) {
+      if (isTagCall(query)) {
+        return that.ql.apply(that, arguments)
+      }
       var caller = function (variables, requestOptions) {
         if (!requestOptions) requestOptions = {}
         if (!variables) variables = {}
@@ -190,6 +214,12 @@
   GraphQLClient.prototype.createHelpers = function (sender) {
     var that = this
     function helper(query) {
+      if (isTagCall(query)) {
+        that.__prefix = this.prefix
+        var result = that.ql.apply(that, arguments)
+        that.__prefix = ""
+        return result
+      }
       var caller = sender(this.prefix + " " + query)
       if (arguments.length > 1) {
         return caller.apply(null, Array.prototype.slice.call(arguments, 1))
@@ -200,14 +230,9 @@
     
     this.mutate = helper.bind({prefix: "mutation"})
     this.query = helper.bind({prefix: "query"})
-    this.subscription = helper.bind({prefix: "subscription"})
-    this.fragment = function (fragment) {
-      that.options.fragments = __extend(true, that.options.fragments, fragment)
-      that._fragments = that.buildFragments(that.options.fragments)
-      return that._fragments
-    }
+    this.subscribe = helper.bind({prefix: "subscription"})
     
-    var helperMethods = ['mutate', 'query', 'subscription']
+    var helperMethods = ['mutate', 'query', 'subscribe']
     helperMethods.forEach(function (m) {
       that[m].run = function (query) {
         return that[m](query, {})
@@ -217,16 +242,51 @@
       return sender(query, {})
     }
   }
+
+  GraphQLClient.prototype.fragments = function () {
+    return this._fragments
+  }
+
+  GraphQLClient.prototype.getOptions = function () {
+    return this.options
+  }
+
+  GraphQLClient.prototype.fragment = function (fragment) {
+    if (typeof fragment == 'string') {
+      var _fragment = this._fragments[fragment.replace(/\./g, GraphQLClient.FRAGMENT_SEPERATOR)]
+      if (!_fragment) {
+        throw "Fragment " + fragment + " not found!"
+      }
+      return _fragment.trim()
+    } else {
+      this.options.fragments = __extend(true, this.options.fragments, fragment)
+      this._fragments = this.buildFragments(this.options.fragments)
+      return this._fragments
+    }
+  }
+
+  GraphQLClient.prototype.ql = function (strings) {
+    var that = this
+    fragments = Array.prototype.slice.call(arguments, 1)
+    fragments = fragments.map(function (fragment) {
+      return fragment.match(/fragment\s+([^\s]*)\s/)[1]
+    })
+    var query = this.buildQuery(strings.reduce(function (acc, seg, i) {
+      return acc + fragments[i - 1] + seg
+    }))
+    query = ((this.__prefix||"") + " " + query).trim()
+    return this.run(query)
+  }
   
   ;(function (root, factory) {
     if (typeof define === 'function' && define.amd) {
       define(function () {
-        return (root.GraphQLClient = factory(GraphQLClient))
+        return (root.graphql = factory(GraphQLClient))
       });
     } else if (typeof module === 'object' && module.exports) {
       module.exports = factory(root.GraphQLClient)
     } else {
-      root.GraphQLClient = factory(root.GraphQLClient)
+      root.graphql = factory(root.GraphQLClient)
     }
   }(this, function () {
     return GraphQLClient
