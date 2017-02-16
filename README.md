@@ -91,55 +91,6 @@ graph(`query ($email: String!, $password: String!) {
 })
 ```
 
-### Query Building
-
-You can create queries using `.ql` **ES6 template tag**.
-
-```js
-// Add some fragments...
-graph.fragment({
-  username: {
-    user: `on User {
-      username
-    }`,
-    admin: `on AdminUser {
-      username,
-      administrationLevel 
-    }`
-  }
-})
-
-// Get any fragment with its path...
-var admin = graph.fragment('username.admin')
-
-// Build your query with using fragment paths or dynamic template variables.
-var query = graph.ql`query {
-  ...username.user
-  ...${admin}
-}`
-
-// Use query anywhere...
-$.post("/graphql", {query: query}, function (response) { ... })
-```
-
-`graph.ql` will generate this query string:
-
-```js
-query {
-  ... username_user
-  ... username_admin
-}
-
-fragment username_user on User {
-  username
-}
-
-fragment username_admin on AdminUser {
-  username,
-  administrationLevel 
-}
-```
-
 ### Prepare Query for Lazy Execution
 
 You can prepare queries for lazy execution. It will allow you to reuse your queries with
@@ -375,6 +326,56 @@ var userProfileToShow = graph.fragment('user.profile')
 
 graph`query { ... ${userProfileToShow} }`
 ```
+
+### Query Building
+
+You can create queries using `.ql` **ES6 template tag**.
+
+```js
+// Add some fragments...
+graph.fragment({
+  username: {
+    user: `on User {
+      username
+    }`,
+    admin: `on AdminUser {
+      username,
+      administrationLevel 
+    }`
+  }
+})
+
+// Get any fragment with its path...
+var admin = graph.fragment('username.admin')
+
+// Build your query with using fragment paths or dynamic template variables.
+var query = graph.ql`query {
+  ...username.user
+  ...${admin}
+}`
+
+// Use query anywhere...
+$.post("/graphql", {query: query}, function (response) { ... })
+```
+
+`graph.ql` will generate this query string:
+
+```js
+query {
+  ... username_user
+  ... username_admin
+}
+
+fragment username_user on User {
+  username
+}
+
+fragment username_admin on AdminUser {
+  username,
+  administrationLevel 
+}
+```
+
 
 ## ToDo Example
 
