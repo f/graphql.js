@@ -42,7 +42,7 @@
     xhr.send("query=" + escape(data.query) + "&variables=" + escape(JSON.stringify(data.variables)))
   }
 
-  function isTagCall(strings) {
+  function __isTagCall(strings) {
     return Object.prototype.toString.call(strings) == '[object Array]' && strings.raw
   }
   
@@ -72,7 +72,7 @@
   }
   
   // "fragment auth.login" will be "fragment auth_login"
-  GraphQLClient.FRAGMENT_SEPERATOR = "_"
+  FRAGMENT_SEPERATOR = "_"
   
   // The autotype keyword.
   GraphQLClient.AUTOTYPE_PATTERN = /\(@autotype\)/
@@ -88,7 +88,7 @@
     for (name in object) {
       if (object.hasOwnProperty(name)) {
         typeof object[name] == "object"
-        ? this.flatten(object[name], prefix + name + GraphQLClient.FRAGMENT_SEPERATOR, out)
+        ? this.flatten(object[name], prefix + name + FRAGMENT_SEPERATOR, out)
         : out[prefix + name] = object[name]
       }
     }
@@ -100,7 +100,7 @@
   * {a: {b: {c: 1, d: 2}}}, "a.b.c" => 1
   */
   GraphQLClient.prototype.fragmentPath = function (fragments, path) {
-    var getter = new Function("fragments", "return fragments." + path.replace(/\./g, GraphQLClient.FRAGMENT_SEPERATOR))
+    var getter = new Function("fragments", "return fragments." + path.replace(/\./g, FRAGMENT_SEPERATOR))
     var obj = getter(fragments)
     if (path != "on" && (!obj || typeof obj != "string")) {
       throw "Fragment " + path + " not found"
@@ -116,7 +116,7 @@
       return that.fragmentPath(fragments, path)
     })
     query = query.replace(fragmentRegexp, function (_, $m) {
-      return "... " + $m.split(".").join(GraphQLClient.FRAGMENT_SEPERATOR)
+      return "... " + $m.split(".").join(FRAGMENT_SEPERATOR)
     })
     return [query].concat(collectedFragments.filter(function (fragment) {
       // Remove already used fragments
@@ -178,8 +178,8 @@
   GraphQLClient.prototype.createSenderFunction = function (url) {
     var that = this
     return function (query) {
-      if (isTagCall(query)) {
-        return that.ql.apply(that, arguments)
+      if (__isTagCall(query)) {
+        return that.run(that.ql.apply(that, arguments))
       }
       var caller = function (variables, requestOptions) {
         if (!requestOptions) requestOptions = {}
@@ -214,9 +214,9 @@
   GraphQLClient.prototype.createHelpers = function (sender) {
     var that = this
     function helper(query) {
-      if (isTagCall(query)) {
+      if (__isTagCall(query)) {
         that.__prefix = this.prefix
-        var result = that.ql.apply(that, arguments)
+        var result = that.run(that.ql.apply(that, arguments))
         that.__prefix = ""
         return result
       }
@@ -253,7 +253,7 @@
 
   GraphQLClient.prototype.fragment = function (fragment) {
     if (typeof fragment == 'string') {
-      var _fragment = this._fragments[fragment.replace(/\./g, GraphQLClient.FRAGMENT_SEPERATOR)]
+      var _fragment = this._fragments[fragment.replace(/\./g, FRAGMENT_SEPERATOR)]
       if (!_fragment) {
         throw "Fragment " + fragment + " not found!"
       }
@@ -275,7 +275,7 @@
       return acc + fragments[i - 1] + seg
     }))
     query = ((this.__prefix||"") + " " + query).trim()
-    return this.run(query)
+    return query
   }
   
   ;(function (root, factory) {

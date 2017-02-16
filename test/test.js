@@ -17,11 +17,11 @@ client.fragment({
   }
 })
 assert.equal(typeof client, "function")
-assert.equal(client.fragment('auth.error'), "fragment auth_error on Error {messages}")
+assert.equal(client.fragment('auth.error'), "fragment authError on Error {messages}")
 assert.equal(client.getOptions().method, "put")
 assert.equal(client.fragments().user, "\nfragment user on User {name}")
-assert.equal(client.fragments().auth_user, "\nfragment auth_user on User {token}")
-assert.equal(client.fragments().auth_error, "\nfragment auth_error on Error {messages}")
+assert.equal(client.fragments().auth_user, "\nfragment authUser on User {token}")
+assert.equal(client.fragments().auth_error, "\nfragment authError on Error {messages}")
 
 var queryIn = `query (@autotype) {
   user(name: $name, bool: $bool, int: $int) {
@@ -33,13 +33,13 @@ var queryIn = `query (@autotype) {
 var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!) {
   user(name: $name, bool: $bool, int: $int) {
     ... user
-    ... auth_error
+    ... authError
   }
 }
 
 fragment user on User {name}
 
-fragment auth_error on Error {messages}`
+fragment authError on Error {messages}`
 
 assert.equal(client.buildQuery(queryIn, {name: "fatih", bool: true, int: 2}), expectedQuery)
 
