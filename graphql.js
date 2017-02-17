@@ -25,23 +25,50 @@
     return extended
   }
   
-  function __request(method, url, headers, data, callback) {
-    var xhr = new XMLHttpRequest()
-    xhr.open(method, url, true)
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-    xhr.setRequestHeader('Accept', 'application/json')
-    for (var key in headers) {
-      xhr.setRequestHeader(key, headers[key])
+  function __xhr() {
+    if (window.XMLHttpRequest) {
+      return new window.XMLHttpRequest
+    } else {
+      try { return new ActiveXObject("MSXML2.XMLHTTP.3.0") } catch(ex) { return null }
     }
-    xhr.onerror = function () {
-      callback(xhr, xhr.status)
-    }
-    xhr.onload = function () {
-      callback(JSON.parse(xhr.responseText), xhr.status)
-    }
-    xhr.send("query=" + escape(data.query) + "&variables=" + escape(JSON.stringify(data.variables)))
   }
-
+  
+  function __request(method, url, headers, data, callback) {
+    var body = "query=" + escape(data.query) + "&variables=" + escape(JSON.stringify(data.variables))
+    if (typeof XMLHttpRequest != 'undefined') {
+      var xhr = __xhr()
+      xhr.open(method, url, true)
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+      xhr.setRequestHeader('Accept', 'application/json')
+      for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
+      xhr.onerror = function () { callback(xhr, xhr.status) }
+      xhr.onload = function () { callback(JSON.parse(xhr.responseText), xhr.status) }
+      xhr.send(body)
+    } else if (typeof require == 'function') {
+      var http = require('http'), URL = require('url'), uri = URL.parse(url)
+      var req = http.request({
+        protocol: uri.protocol,
+        hostname: uri.hostname,
+        port: uri.port,
+        path: uri.path,
+        method: "POST",
+        headers: __extend({
+          'Content-type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        }, headers)
+      }, function (response) {
+        var str = ''
+        response.setEncoding('utf8')
+        response.on('data', function (chunk) { str += chunk })
+        response.on('end', function () {
+          callback(JSON.parse(str), response.statusCode)
+        })
+      })
+      req.write(body)
+      req.end()
+    }
+  }
+  
   function __isTagCall(strings) {
     return Object.prototype.toString.call(strings) == '[object Array]' && strings.raw
   }
@@ -76,7 +103,7 @@
   
   // The autotype keyword.
   GraphQLClient.AUTOTYPE_PATTERN = /\(@autotype\)/
-
+  
   GraphQLClient.FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9\.\_]+)/g
   
   // Flattens nested object
@@ -107,7 +134,7 @@
     }
     return obj
   }
-
+  
   GraphQLClient.prototype.collectFragments = function (query, fragments) {
     var that = this
     var fragmentRegexp = GraphQLClient.FRAGMENT_PATTERN
@@ -193,7 +220,7 @@
     }
     return fragmentObject
   }
-
+  
   GraphQLClient.prototype.buildQuery = function (query, variables) {
     return this.autoType(this.processQuery(query, this._fragments, variables), variables)
   }
@@ -265,15 +292,15 @@
       return sender(query, {})
     }
   }
-
+  
   GraphQLClient.prototype.fragments = function () {
     return this._fragments
   }
-
+  
   GraphQLClient.prototype.getOptions = function () {
     return this.options
   }
-
+  
   GraphQLClient.prototype.fragment = function (fragment) {
     if (typeof fragment == 'string') {
       var _fragment = this._fragments[fragment.replace(/\./g, FRAGMENT_SEPERATOR)]
@@ -287,7 +314,7 @@
       return this._fragments
     }
   }
-
+  
   GraphQLClient.prototype.ql = function (strings) {
     var that = this
     fragments = Array.prototype.slice.call(arguments, 1)

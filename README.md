@@ -7,6 +7,7 @@
 
 - Nothing depended, plain vanilla JavaScript.
 - Plug & Play.
+- Isomorphic.
 - Runs on most of the browsers.
 - You don't need to install Node.js ecosystem into your computer.
 
@@ -34,20 +35,40 @@ allUsers().then(function (users) {
 
 ## Installation
 
-You can download `graphql.js` directly, or you can use **Bower**.
+You can download `graphql.js` directly, or you can use **Bower** or **NPM**.
 
-- [Development Version - 8kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
-- [Production Version - 3.5kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
+#### Download for Browser
+- [Development Version - 10kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
+- [Production Version - 5kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
 
+#### Using Bower
 ```bash
-bower install graphql.js # via bower
-npm install graphql.js # via NPM
+bower install graphql.js --save
 ```
 
-Then you can call it from your HTML.
+#### Using NPM
+```bash
+npm install graphql.js --save
+```
+
+#### Using with Rails Asset Pipeline
+
+You can use GraphQL.js with Rails Asset Pipeline using [graphqljs-rails](https://github.com/f/graphqljs-rails).
+
+## Using
+
+GraphQL.js is **isomorphic**. You can use it in both **browser and Node.js**.
+
+#### Use in Browser
 
 ```html
 <script src="/path/to/graphql.js"></script>
+```
+
+#### Use in Node.js
+
+```js
+var graphql = require('graphql.js')
 ```
 
 ## Connection
