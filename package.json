@@ -1,6 +1,6 @@
 {
   "name": "graphql.js",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "GraphQL Client for JavaScript",
   "main": "graphql.js",
   "directories": {
