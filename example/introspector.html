@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <script src="../graphql.js"></script>
+    <script>
+      var graph = graphql("http://localhost:3000/graphql")
+      function introspect(callback) {
+        return graph`query {
+          __schema {
+            types {
+              name
+              kind
+              fields(includeDeprecated: true) {
+                name
+                args {
+                  name
+                  type {
+                    kind
+                  }
+                }
+                type {
+                  name
+                  kind
+                  ofType {
+                    kind
+                    name
+                  }
+                }
+                isDeprecated
+                deprecationReason
+              }
+            }
+          }
+        }`.then(function (response) {
+          var objects = {}
+          response.__schema.types.filter(function (type) {
+            return type.kind == "OBJECT"
+          }).forEach(function (object) {
+            var fragment = "on " + object.name + " {\n"
+            objects[object.name + "Fragment"] = function GraphObject(fields) {
+              var obj = {}
+              object.fields.forEach(function (field) {
+                obj[field.name] = fields[field.name]
+              })
+              return obj
+            }
+            object.fields.forEach(function (field) {
+              if (field.args.filter(function (arg) {
+                return arg.type.kind == 'NON_NULL'
+              }).length > 0) {
+                return
+              }
+              if (field.type.kind == "NON_NULL" && field.type.ofType.kind == "OBJECT") {
+                fragment += "\t" + field.name + " { ..." + field.type.ofType.name + "Fragment }\n"
+              } else if (field.type.kind == "OBJECT") {
+                fragment += "\t" + field.name + " { ..." + field.type.name + "Fragment }\n"
+              } else if (field.type.kind != "INTERFACE"
+              && field.type.kind != "UNION") {
+                fragment += "\t" + field.name + "\n"
+              }
+            })
+            objects[object.name + "Fragment"].fragment = fragment + "}\n"
+          })
+          callback(objects)
+        })
+      }
+
+      introspect(function (types) {
+        var fragments = {}
+        for (var type in types) {
+          fragments[type] = types[type].fragment
+        }
+        graph.fragment(fragments)
+      })
+    </script>
+  </head>
+  <body>
+    
+  </body>
+</html>

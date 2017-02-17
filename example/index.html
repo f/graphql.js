@@ -4,32 +4,16 @@
     <script>
       var graph = graphql("http://localhost:3000/graphql", {
         fragments: {
+          info: "on User {hasPin}",
           login: {
-            auth: "on User {token, hasPin}"
+            auth: "on User {token, ...info}"
           }
-        }
-      })
-
-      // var listTodos = graph.query(`{ allTodos(orderBy: "date") { ...todo } }`)
-
-      // graph.fragment({x: {y: {error: `on Error { messages }`}}})
-
-      graph.fragment({
-        fatih: {
-          a: "on Error {messages}"
-        }
-      })
-
-      graph.fragment({
-        fatih: {
-          b: "on Error {messages}"
         }
       })
 
       var login = graph.query(`(@autotype) {
         auth(email: $email, password: $password) {
           ... login.auth
-          ... fatih.b
         }
       }`)
 

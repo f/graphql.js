@@ -107,14 +107,32 @@
     }
     return obj
   }
-  
-  GraphQLClient.prototype.processQuery = function (query, fragments) {
+
+  GraphQLClient.prototype.collectFragments = function (query, fragments) {
     var that = this
     var fragmentRegexp = GraphQLClient.FRAGMENT_PATTERN
-    var collectedFragments = (query.match(fragmentRegexp)||[]).map(function (fragment) {
+    var collectedFragments = []
+    ;(query.match(fragmentRegexp)||[]).forEach(function (fragment) {
       var path = fragment.replace(fragmentRegexp, function (_, $m) {return $m})
-      return that.fragmentPath(fragments, path)
+      var fragment = that.fragmentPath(fragments, path)
+      var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path))
+      if (fragment.match(pathRegexp)) {
+        throw "Recursive fragment usage detected on " + path + "."
+      }
+      collectedFragments.push(fragment)
+      // Collect sub fragments
+      if (collectedFragments.filter(function (alreadyCollected) { return alreadyCollected.match(new RegExp("fragment " + path)) }).length > 0 && fragmentRegexp.test(fragment)) {
+        that.collectFragments(fragment, fragments).forEach(function (fragment) {
+          collectedFragments.unshift(fragment)
+        })
+      }
     })
+    return collectedFragments
+  }
+  
+  GraphQLClient.prototype.processQuery = function (query, fragments) {
+    var fragmentRegexp = GraphQLClient.FRAGMENT_PATTERN
+    var collectedFragments = this.collectFragments(query, fragments)
     query = query.replace(fragmentRegexp, function (_, $m) {
       return "... " + $m.split(".").join(FRAGMENT_SEPERATOR)
     })

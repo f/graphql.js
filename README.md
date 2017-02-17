@@ -255,6 +255,19 @@ Accessing them is also intuitive:
 graph.query(`{ allUsers { ...user.info } }`)
 ```
 
+### Using Fragments in Fragments
+
+You can reuse fragments in your fragments.
+
+```js
+graph.fragment({
+  user: "on User {name, surname}",
+  login: {
+    auth: "on User {token, ...user}"
+  }
+})
+```
+
 ### Lazy Fragments
 
 You can also add fragments lazily. So you can use your fragments more modular.
