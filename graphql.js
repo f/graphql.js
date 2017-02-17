@@ -115,16 +115,21 @@
     ;(query.match(fragmentRegexp)||[]).forEach(function (fragment) {
       var path = fragment.replace(fragmentRegexp, function (_, $m) {return $m})
       var fragment = that.fragmentPath(fragments, path)
-      var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path))
-      if (fragment.match(pathRegexp)) {
-        throw "Recursive fragment usage detected on " + path + "."
-      }
-      collectedFragments.push(fragment)
-      // Collect sub fragments
-      if (collectedFragments.filter(function (alreadyCollected) { return alreadyCollected.match(new RegExp("fragment " + path)) }).length > 0 && fragmentRegexp.test(fragment)) {
-        that.collectFragments(fragment, fragments).forEach(function (fragment) {
-          collectedFragments.unshift(fragment)
+      if (fragment) {
+        var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path))
+        if (fragment.match(pathRegexp)) {
+          throw "Recursive fragment usage detected on " + path + "."
+        }
+        collectedFragments.push(fragment)
+        // Collect sub fragments
+        var alreadyCollectedFragments = collectedFragments.filter(function (alreadyCollected) {
+          return alreadyCollected.match(new RegExp("fragment " + path))
         })
+        if (alreadyCollectedFragments.length > 0 && fragmentRegexp.test(fragment)) {
+          that.collectFragments(fragment, fragments).forEach(function (fragment) {
+            collectedFragments.unshift(fragment)
+          })
+        }
       }
     })
     return collectedFragments
