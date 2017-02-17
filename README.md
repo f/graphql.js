@@ -1,7 +1,9 @@
-# GraphQL.js (former jquery-graphql)
+# GraphQL.js
 [![Bower version](https://badge.fury.io/bo/graphql.js.svg)](http://badge.fury.io/bo/graphql.js)
 [![NPM version](https://badge.fury.io/js/graphql.js.svg)](http://badge.fury.io/js/graphql.js)
 [![Build Status](https://travis-ci.org/f/graphql.js.svg?branch=master)](https://travis-ci.org/f/graphql.js)
+
+> This project was **jQuery-GraphQL** formerly. Now it's fully **independent**.
 
 ### Features
 
@@ -39,8 +41,8 @@ You can download `graphql.js` directly, or you can use **Bower** or **NPM**.
 
 #### Download for Browser
 
-- [Development Version - 10kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
-- [Production Version - 5kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
+- [Development Version - 12kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
+- [Production Version - 6kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
 
 #### Using Bower
 ```bash
@@ -176,14 +178,14 @@ var increment = graph.mutate`increment { state }`
 var onIncrement = graph.subscribe`onIncrement { state }`
 ```
 
-### Autotyping with `@autotype`
+### Automatic Declaring with `@autodeclare` or `{declare: true}`
 
 Declaring simple-typed (`String`, `Int`, `Boolean`) variables in query were a
-little bothering to me. That's why I added an `@autotype` keyword to the processor.
+little bothering to me. That's why I added an `@autodeclare` keyword or `{declare: true}` setting to the processor.
 It detects types from the variables and declares them in query automatically.
 
 ```js
-var login = graph.query(`(@autotype) {
+var login = graph.query(`(@autodeclare) {
   auth(email: $email, password: $password) {
     ... on User {
       token
@@ -209,13 +211,25 @@ query ($email: String!, $password: String!) {
 }
 ```
 
-### Advanced Autotyping
+You can also pass `{declare: true}` option to the `.query`, `.mutate` and `.subscribe` helper:
+
+```js
+var login = graph.query(`auth(email: $email, password: $password) {
+  ... on User {
+    token
+  }
+}`)
+```
+
+This will also create the same query above.
+
+### Advanced Auto Declaring
 
 You can define custom types when defining variables by using a simple `"variable!Type"` notation.
 It will help you to make more complex variables:
 
 ```js
-var register = graph.mutate(`(@autotype) {
+var register = graph.mutate(`(@autodeclare) {
   userRegister(input: $input) { ... }
 }`)
 
@@ -231,6 +245,22 @@ This will generate following query:
 mutation ($input: UserRegisterInput!) {
   userRegister(input: $input) { ... }
 }
+```
+
+#### Default Auto Declaring on Helper methods
+
+You can pass `{declare: true}` to helpers:
+
+```js
+graph.query("auth(email: $email, password: $password) { token }", {declare: true})
+```
+
+Also you can enable auto declaration to run by default using `alwaysAutodeclare` setting.
+
+```js
+var graph = graphql("http://localhost:3000/graphql", {
+  alwaysAutodeclare: true
+})
 ```
 
 ## Fragments
@@ -428,20 +458,20 @@ function getTodos() {
 }
 
 function addTodo(text) {
-  return graph.mutate(`(@autotype) { todoAdd(text: $text) { ...todo } }`, {
+  return graph.mutate(`(@autodeclare) { todoAdd(text: $text) { ...todo } }`, {
     text: text
   })
 }
 
 function setTodo(id, isCompleted) {
-  return graph.mutate(`(@autotype) { todoComplete(id: $id, status: $isCompleted) { ...todo } }`, {
+  return graph.mutate(`(@autodeclare) { todoComplete(id: $id, status: $isCompleted) { ...todo } }`, {
     id: id,
     isCompleted: isCompleted
   })
 }
 
 function removeTodo(id) {
-  return graph.mutate(`(@autotype) { todoRemove(id: $id) { success } }`, {
+  return graph.mutate(`(@autodeclare) { todoRemove(id: $id) { success } }`, {
     id: id
   })
 }

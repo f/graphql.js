@@ -3,6 +3,10 @@
     <script src="../graphql.js"></script>
     <script>
       var graph = graphql("http://localhost:3000/graphql", {
+        alwaysAutodeclare: true,
+        headers: {
+          "User-Token": "E4iXrF78TF7V6mYbwEwI"
+        },
         fragments: {
           info: "on User {hasPin}",
           login: {
@@ -11,11 +15,10 @@
         }
       })
 
-      var login = graph.query(`(@autotype) {
+      var login = graph.query(`
         auth(email: $email, password: $password) {
           ... login.auth
-        }
-      }`)
+        }`)
 
       login({
         email: "p@protel.com.tr",

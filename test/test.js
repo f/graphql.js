@@ -23,7 +23,7 @@ assert.equal(client.fragments().user, "\nfragment user on User {name}")
 assert.equal(client.fragments().auth_user, "\nfragment auth_user on User {token, ...user}")
 assert.equal(client.fragments().auth_error, "\nfragment auth_error on Error {messages}")
 
-var queryIn = `query (@autotype) {
+var queryIn = `query (@autodeclare) {
   user(name: $name, bool: $bool, int: $int) {
     ...auth.user
     ...auth.error

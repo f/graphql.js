@@ -80,6 +80,8 @@
       for (var m in client) {
         if (typeof client[m] == 'function') {
           _lazy[m] = client[m].bind(client)
+          if (client[m].declare) _lazy[m].declare = client[m].declare.bind(client)
+          if (client[m].run) _lazy[m].run = client[m].run.bind(client)
         }
       }
       return _lazy
@@ -101,8 +103,8 @@
   // "fragment auth.login" will be "fragment auth_login"
   FRAGMENT_SEPERATOR = "_"
   
-  // The autotype keyword.
-  GraphQLClient.AUTOTYPE_PATTERN = /\(@autotype\)/
+  // The autodeclare keyword.
+  GraphQLClient.AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/
   
   GraphQLClient.FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9\.\_]+)/g
   
@@ -174,13 +176,13 @@
     })).join("\n")
   }
   
-  GraphQLClient.prototype.autoType = function (query, variables) {
+  GraphQLClient.prototype.autoDeclare = function (query, variables) {
     var typeMap = {
       string: "String",
       number: "Int",
       boolean: "Boolean"
     }
-    return query.replace(GraphQLClient.AUTOTYPE_PATTERN, function () {
+    return query.replace(GraphQLClient.AUTODECLARE_PATTERN, function () {
       var types = []
       for (var key in variables) {
         var value = variables[key]
@@ -191,11 +193,11 @@
         }
       }
       types = types.join(", ")
-      return "("+ types +")"
+      return types ? "("+ types +")" : ""
     })
   }
   
-  GraphQLClient.prototype.cleanAutoTypeAnnotations = function (variables) {
+  GraphQLClient.prototype.cleanAutoDeclareAnnotations = function (variables) {
     if (!variables) variables = {}
     var newVariables = {}
     for (var key in variables) {
@@ -222,7 +224,7 @@
   }
   
   GraphQLClient.prototype.buildQuery = function (query, variables) {
-    return this.autoType(this.processQuery(query, this._fragments, variables), variables)
+    return this.autoDeclare(this.processQuery(query, this._fragments, variables), variables)
   }
   
   GraphQLClient.prototype.createSenderFunction = function (url) {
@@ -240,7 +242,7 @@
         return new Promise(function (resolve, reject) {
           __request(that.options.method || "post", url, headers, {
             query: fragmentedQuery,
-            variables: that.cleanAutoTypeAnnotations(variables)
+            variables: that.cleanAutoDeclareAnnotations(variables)
           }, function (response, status) {
             if (status == 200) {
               if (response.errors) {
@@ -266,26 +268,35 @@
     function helper(query) {
       if (__isTagCall(query)) {
         that.__prefix = this.prefix
+        that.__suffix = this.suffix
         var result = that.run(that.ql.apply(that, arguments))
         that.__prefix = ""
+        that.__suffix = ""
         return result
       }
-      var caller = sender(this.prefix + " " + query)
+      var caller = sender(this.prefix + " " + query + " " + this.suffix)
       if (arguments.length > 1) {
         return caller.apply(null, Array.prototype.slice.call(arguments, 1))
       } else {
         return caller
       }
     }
-    
-    this.mutate = helper.bind({prefix: "mutation"})
-    this.query = helper.bind({prefix: "query"})
-    this.subscribe = helper.bind({prefix: "subscription"})
-    
-    var helperMethods = ['mutate', 'query', 'subscribe']
-    helperMethods.forEach(function (m) {
-      that[m].run = function (query) {
-        return that[m](query, {})
+
+    var helpers = [
+      {method: 'mutate', type: 'mutation'},
+      {method: 'query', type: 'query'},
+      {method: 'subscribe', type: 'subscription'}
+    ]
+    helpers.forEach(function (m) {
+      that[m.method] = function (query, options) {
+        if (that.options.alwaysAutodeclare === true || (options && options.declare === true)) {
+          return helper.call({prefix: m.type + " (@autodeclare) {", suffix: "}"}, query)
+        } else {
+          return helper.call({prefix: m.type, suffix: ""}, query)
+        }
+      }
+      that[m.method].run = function (query) {
+        return that[m.method](query, {})
       }
     })
     this.run = function (query) {
@@ -319,12 +330,15 @@
     var that = this
     fragments = Array.prototype.slice.call(arguments, 1)
     fragments = fragments.map(function (fragment) {
-      return fragment.match(/fragment\s+([^\s]*)\s/)[1]
+      if (typeof fragment == 'string') {
+        return fragment.match(/fragment\s+([^\s]*)\s/)[1]
+      }
     })
-    var query = this.buildQuery(strings.reduce(function (acc, seg, i) {
+    var query = (typeof strings == 'string') ? strings : strings.reduce(function (acc, seg, i) {
       return acc + fragments[i - 1] + seg
-    }))
-    query = ((this.__prefix||"") + " " + query).trim()
+    })
+    query = this.buildQuery(query)
+    query = ((this.__prefix||"") + " " + query + " " + (this.__suffix||"")).trim()
     return query
   }
   
