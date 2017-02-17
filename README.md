@@ -38,6 +38,7 @@ allUsers().then(function (users) {
 You can download `graphql.js` directly, or you can use **Bower** or **NPM**.
 
 #### Download for Browser
+
 - [Development Version - 10kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
 - [Production Version - 5kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js)
 
