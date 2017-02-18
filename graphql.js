@@ -78,7 +78,7 @@
       }
       return _lazy
     } else if (arguments[2] !== true) {
-      throw "You cannot create GraphQLClient instance. Please call GraphQLClient as function."
+      throw new Error("You cannot create GraphQLClient instance. Please call GraphQLClient as function.")
     }
     if (!options)
     options = {}
@@ -124,7 +124,7 @@
     var getter = new Function("fragments", "return fragments." + path.replace(/\./g, FRAGMENT_SEPERATOR))
     var obj = getter(fragments)
     if (path != "on" && (!obj || typeof obj != "string")) {
-      throw "Fragment " + path + " not found"
+      throw new Error("Fragment " + path + " not found")
     }
     return obj
   }
@@ -139,7 +139,7 @@
       if (fragment) {
         var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path))
         if (fragment.match(pathRegexp)) {
-          throw "Recursive fragment usage detected on " + path + "."
+          throw new Error("Recursive fragment usage detected on " + path + ".")
         }
         collectedFragments.push(fragment)
         // Collect sub fragments
