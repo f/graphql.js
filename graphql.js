@@ -25,18 +25,10 @@
     return extended
   }
   
-  function __xhr() {
-    if (window.XMLHttpRequest) {
-      return new window.XMLHttpRequest
-    } else {
-      try { return new ActiveXObject("MSXML2.XMLHTTP.3.0") } catch(ex) { return null }
-    }
-  }
-  
   function __request(method, url, headers, data, callback) {
     var body = "query=" + escape(data.query) + "&variables=" + escape(JSON.stringify(data.variables))
     if (typeof XMLHttpRequest != 'undefined') {
-      var xhr = __xhr()
+      var xhr = new XMLHttpRequest
       xhr.open(method, url, true)
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
       xhr.setRequestHeader('Accept', 'application/json')
