@@ -242,7 +242,7 @@ var graph = graphql("http://localhost:3000/graphql", {
 After you enable `alwaysAutodeclare` option, your methods will try to detect types of variables and declare them.
 
 ```js
-# When alwaysAutodeclare is true, you don't have to pass {declare: true} option.
+// When alwaysAutodeclare is true, you don't have to pass {declare: true} option.
 
 graph.query("auth(email: $email, password: $password) { token }")
 ```
