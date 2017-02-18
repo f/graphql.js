@@ -450,9 +450,9 @@ fragment username_admin on AdminUser {
 ```
 
 
-## ToDo Example
+## Todo App Example
 
-A pseudo CRUD ToDo app example code to show how to use GraphQL.js.
+A CRUD ToDo app example code to show how to use GraphQL.js. An implementation can be found at [**f/graphql.js-demo**](https://github.com/f/graphql.js-demo)
 
 ```js
 var graph = graphql("/graphql", {
