@@ -456,30 +456,31 @@ A pseudo CRUD ToDo app example code to show how to use GraphQL.js.
 
 ```js
 var graph = graphql("/graphql", {
+  alwaysAutodeclare: true,
   fragments: {
     todo: `on Todo {id, text, isCompleted}`
   }
 })
 
 function getTodos() {
-  return graph.query(`{ allTodos { ...todo } }`)
+  return graph.query(`allTodos { ...todo }`)
 }
 
 function addTodo(text) {
-  return graph.mutate(`(@autodeclare) { todoAdd(text: $text) { ...todo } }`, {
+  return graph.mutate(`todoAdd(text: $text) { ...todo }`, {
     text: text
   })
 }
 
 function setTodo(id, isCompleted) {
-  return graph.mutate(`(@autodeclare) { todoComplete(id: $id, status: $isCompleted) { ...todo } }`, {
+  return graph.mutate(`todoComplete(id: $id, status: $isCompleted) { ...todo }`, {
     id: id,
     isCompleted: isCompleted
   })
 }
 
 function removeTodo(id) {
-  return graph.mutate(`(@autodeclare) { todoRemove(id: $id) { success } }`, {
+  return graph.mutate(`todoRemove(id: $id) { success }`, {
     id: id
   })
 }
