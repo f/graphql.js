@@ -218,12 +218,36 @@ var login = graph.query(`auth(email: $email, password: $password) {
   ... on User {
     token
   }
-}`)
+}`, {declare: true})
 ```
 
 This will also create the same query above.
 
 ### Advanced Auto Declaring
+
+Beside you can pass `{declare: true}` to helpers:
+
+```js
+graph.query("auth(email: $email, password: $password) { token }", {declare: true})
+```
+
+Also you can enable auto declaration to run by default using `alwaysAutodeclare` setting.
+
+```js
+var graph = graphql("http://localhost:3000/graphql", {
+  alwaysAutodeclare: true
+})
+```
+
+After you enable `alwaysAutodeclare` option, your methods will try to detect types of variables and declare them.
+
+```js
+# When alwaysAutodeclare is true, you don't have to pass {declare: true} option.
+
+graph.query("auth(email: $email, password: $password) { token }")
+```
+
+#### Auto Declaring Custom Types
 
 You can define custom types when defining variables by using a simple `"variable!Type"` notation.
 It will help you to make more complex variables:
@@ -245,22 +269,6 @@ This will generate following query:
 mutation ($input: UserRegisterInput!) {
   userRegister(input: $input) { ... }
 }
-```
-
-#### Default Auto Declaring on Helper methods
-
-You can pass `{declare: true}` to helpers:
-
-```js
-graph.query("auth(email: $email, password: $password) { token }", {declare: true})
-```
-
-Also you can enable auto declaration to run by default using `alwaysAutodeclare` setting.
-
-```js
-var graph = graphql("http://localhost:3000/graphql", {
-  alwaysAutodeclare: true
-})
 ```
 
 ## Fragments
