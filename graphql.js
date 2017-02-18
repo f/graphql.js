@@ -290,13 +290,13 @@
     helpers.forEach(function (m) {
       that[m.method] = function (query, options) {
         if (that.options.alwaysAutodeclare === true || (options && options.declare === true)) {
-          return helper.call({prefix: m.type + " (@autodeclare) {", suffix: "}"}, query)
+          return helper.call({prefix: m.type + " (@autodeclare) {", suffix: "}"}, query, {})
         } else {
-          return helper.call({prefix: m.type, suffix: ""}, query)
+          return helper.call({prefix: m.type, suffix: ""}, query, {})
         }
       }
-      that[m.method].run = function (query) {
-        return that[m.method](query, {})
+      that[m.method].run = function (query, options) {
+        return that[m.method](query, options)
       }
     })
     this.run = function (query) {
