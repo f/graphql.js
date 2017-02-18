@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/f/graphql.js.svg?branch=master)](https://travis-ci.org/f/graphql.js)
 
 > This project was **jQuery-GraphQL** formerly. Now it's fully **independent**.
-> Originally inspired by [Richard Mosolgo's blog post](http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/)
+> Originally inspired by [Robert Mosolgo's blog post](http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/)
 
 ### Features
 
