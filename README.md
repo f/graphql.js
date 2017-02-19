@@ -476,7 +476,7 @@ function getTodos() {
 function addTodo(text) {
   return graph.mutate(`todoAdd(text: $text) {
     ...todo
-  }`)({
+  }`, {
     text: text
   })
 }
@@ -487,7 +487,7 @@ function setTodo(id, isCompleted) {
     status: $isCompleted
   ) {
     ...todo
-  }`)({
+  }`, {
     "id!ID": id,
     isCompleted: isCompleted
   })
@@ -498,7 +498,7 @@ function removeTodo(id) {
     id: $id
   ) {
     ...todo
-  }`)({
+  }`, {
     "id!ID": id
   })
 }

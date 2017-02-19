@@ -267,7 +267,7 @@
         return result
       }
       var caller = sender(this.prefix + " " + query + " " + this.suffix)
-      if (arguments.length > 1) {
+      if (arguments.length > 1 && arguments[1] != null) {
         return caller.apply(null, Array.prototype.slice.call(arguments, 1))
       } else {
         return caller
@@ -280,11 +280,11 @@
       {method: 'subscribe', type: 'subscription'}
     ]
     helpers.forEach(function (m) {
-      that[m.method] = function (query, options) {
+      that[m.method] = function (query, variables, options) {
         if (that.options.alwaysAutodeclare === true || (options && options.declare === true)) {
-          return helper.call({prefix: m.type + " (@autodeclare) {", suffix: "}"}, query)
+          return helper.call({prefix: m.type + " (@autodeclare) {", suffix: "}"}, query, variables)
         } else {
-          return helper.call({prefix: m.type, suffix: ""}, query)
+          return helper.call({prefix: m.type, suffix: ""}, query, variables)
         }
       }
       that[m.method].run = function (query, options) {
