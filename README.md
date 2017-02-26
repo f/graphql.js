@@ -8,19 +8,19 @@
 
 ### Features
 
-- Nothing depended, plain vanilla JavaScript.
+- No dependencies, plain vanilla JavaScript.
 - Plug & Play.
 - Isomorphic.
-- Runs on most of the browsers.
-- You don't need to install Node.js ecosystem into your computer.
+- Runs on most browsers.
+- You don't need to install Node.js ecosystem on your computer.
 
 ## Overview
 
-GraphQL based on a very simple HTTP transaction which sends a request to an endpoint
+GraphQL is based on a very simple HTTP transaction, which sends a request to an endpoint
 with `query` and `variables`.
 
-Many libraries requires _complex stacks_ to make that simple request.
-In any project you don't use **React**, **Relay** you'll need a simpler
+Many libraries require _complex stacks_ to make that simple request.
+In any project you don't use **React**, **Relay**, you'll need a simpler
 client which manages your query and makes a simple request.
 
 ```js
@@ -77,7 +77,7 @@ var graphql = require('graphql.js')
 
 ## Connection
 
-Create a simple connection to your GraphQL.
+Create a simple connection to your GraphQL endpoint.
 
 ```js
 var graph = graphql("http://localhost:3000/graphql", {
@@ -118,7 +118,7 @@ graph(`query ($email: String!, $password: String!) {
 
 ### Prepare Query for Lazy Execution
 
-You can prepare queries for lazy execution. It will allow you to reuse your queries with
+You can prepare queries for lazy execution. This will allow you to reuse your queries with
 different variables without any hassle.
 
 ```js
@@ -139,7 +139,7 @@ login({
 
 #### Direct Execution with `.run` and ES6 Template Tag
 
-If your query doesn't need any variable, it will generate a lazy execution query by default.
+If your query doesn't need any variables, it will generate a lazy execution query by default.
 If you want to run your query immediately, you have three following options:
 
 ```js
@@ -160,7 +160,7 @@ graph.query`...`
 graph.mutate`...`
 ```
 
-> **I don't recommend** using this. Using it too much may break your DRY. Use lazy execution as much as possible.
+> **I don't recommend** using this. Using it too much may break DRY. Use lazy execution as much as possible.
 
 ### Prefix Helpers
 
@@ -181,7 +181,7 @@ var onIncrement = graph.subscribe`onIncrement { state }`
 
 ### Automatic Declaring with `@autodeclare` or `{declare: true}`
 
-Declaring simple-typed (`String`, `Int`, `Boolean`) variables in query were a
+Declaring primitive-typed (`String`, `Int`, `Boolean`) variables in query were a
 little bothering to me. That's why I added an `@autodeclare` keyword or `{declare: true}` setting to the processor.
 It detects types from the variables and declares them in query automatically.
 
