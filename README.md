@@ -450,6 +450,57 @@ fragment username_admin on AdminUser {
 }
 ```
 
+## Using with Vue.js
+
+Create a `GraphQLProvider.js`.
+
+```js
+import graphql from 'graphql.js';
+
+/* eslint-disable no-underscore-dangle */
+export default {
+  install(Vue, url, options) {
+    Vue.mixin({
+      created() {
+        this._graph = graphql(url, options);
+      },
+    });
+    Object.defineProperty(Vue.prototype, '$graph', {
+      get() {
+        return this._graph;
+      },
+    });
+  },
+};
+```
+
+And then you can use this with your Vue app:
+
+```js
+import Vue from 'vue';
+import GraphQLProvider from './GraphQLProvider';
+
+Vue.use(GraphQLProvider, 'http://localhost:3000/graphql', {
+  headers: {
+    // headers...
+  },
+});
+
+// ... in your Vue VM
+data() {
+  return {
+    hello: '',
+  };
+},
+methods: {
+  makeSomeQuery() {
+    this.$graph.query(`{hello}`).then(response => {
+      this.hello = response.hello;
+    });
+  },
+}
+```
+
 
 ## Todo App Example
 
