@@ -24,9 +24,15 @@
     
     return extended
   }
+
+  function __unique(array) {
+    return array.filter( function onlyUnique(value, index, self) { 
+      return self.indexOf(value) === index;
+    })
+  }
   
   function __request(method, url, headers, data, callback) {
-    var body = "query=" + escape(data.query) + "&variables=" + escape(JSON.stringify(data.variables))
+    var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
     if (typeof XMLHttpRequest != 'undefined') {
       var xhr = new XMLHttpRequest
       xhr.open(method, url, true)
@@ -153,7 +159,7 @@
         }
       }
     })
-    return collectedFragments
+    return __unique(collectedFragments)
   }
   
   GraphQLClient.prototype.processQuery = function (query, fragments) {

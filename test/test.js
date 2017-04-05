@@ -28,12 +28,18 @@ var queryIn = `query (@autodeclare) {
     ...auth.user
     ...auth.error
   }
+  x {
+    ... auth.user
+  }
 }`
 
 var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!) {
   user(name: $name, bool: $bool, int: $int) {
     ... auth_user
     ... auth_error
+  }
+  x {
+    ... auth_user
   }
 }
 
