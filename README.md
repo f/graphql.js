@@ -307,7 +307,7 @@ var graph = graphql("/graphql", {
       info: `on User { id, name, surname, avatar }`
     }
   }
-}) 
+})
 ```
 
 Accessing them is also intuitive:
@@ -414,7 +414,7 @@ graph.fragment({
     }`,
     admin: `on AdminUser {
       username,
-      administrationLevel 
+      administrationLevel
     }`
   }
 })
@@ -446,7 +446,7 @@ fragment username_user on User {
 
 fragment username_admin on AdminUser {
   username,
-  administrationLevel 
+  administrationLevel
 }
 ```
 
@@ -501,6 +501,15 @@ methods: {
 }
 ```
 
+## Change POST Method
+
+As default, GraphQL.js makes a POST request. But you can change the behavior by setting `asJSON`.
+
+```js
+var graph = graphql("http://localhost:3000/graphql", {
+  asJSON: true
+});
+```
 
 ## Todo App Example
 

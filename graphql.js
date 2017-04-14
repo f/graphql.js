@@ -31,12 +31,16 @@
     })
   }
   
-  function __request(method, url, headers, data, callback) {
-    var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
+  function __request(method, url, headers, data, asJson, callback) {
+    if (asJson) {
+      var body = JSON.stringify({query: data.query, variables: data.variables});
+    } else {
+      var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
+    }
     if (typeof XMLHttpRequest != 'undefined') {
       var xhr = new XMLHttpRequest
       xhr.open(method, url, true)
-      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+      xhr.setRequestHeader('Content-Type', (asJson ? 'application/json' : 'application/x-www-form-urlencoded'))
       xhr.setRequestHeader('Accept', 'application/json')
       for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
       xhr.onerror = function () { callback(xhr, xhr.status) }
@@ -51,7 +55,7 @@
         path: uri.path,
         method: "POST",
         headers: __extend({
-          'Content-type': 'application/x-www-form-urlencoded',
+          'Content-type': (asJson ? 'application/json' : 'application/x-www-form-urlencoded'),
           'Accept': 'application/json'
         }, headers)
       }, function (response) {
@@ -241,7 +245,7 @@
           __request(that.options.method || "post", url, headers, {
             query: fragmentedQuery,
             variables: that.cleanAutoDeclareAnnotations(variables)
-          }, function (response, status) {
+          }, !!this.options.asJSON, function (response, status) {
             if (status == 200) {
               if (response.errors) {
                 reject(response.errors)
