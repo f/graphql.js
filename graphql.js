@@ -96,7 +96,7 @@
     if (!options.fragments)
     options.fragments = {}
 
-    this.options = options
+    this.options = options || {}
     this._fragments = this.buildFragments(options.fragments)
     this._sender = this.createSenderFunction(url)
     this.createHelpers(this._sender)
@@ -311,7 +311,11 @@
   }
 
   GraphQLClient.prototype.getOptions = function () {
-    return this.options
+    return this.options || {}
+  }
+
+  GraphQLClient.prototype.headers = function (newHeaders) {
+    return this.options.headers = __extend(this.options.headers, newHeaders)
   }
 
   GraphQLClient.prototype.fragment = function (fragment) {
