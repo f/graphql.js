@@ -47,8 +47,8 @@
       xhr.onload = function () { callback(JSON.parse(xhr.responseText), xhr.status) }
       xhr.send(body)
     } else if (typeof require == 'function') {
-      var http = require('http'), URL = require('url'), uri = URL.parse(url)
-      var req = http.request({
+      var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url);
+      var req = (uri.protocol === 'https:' ? https : http).request({
         protocol: uri.protocol,
         hostname: uri.hostname,
         port: uri.port,
