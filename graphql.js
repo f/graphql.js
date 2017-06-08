@@ -167,6 +167,15 @@
   }
 
   GraphQLClient.prototype.processQuery = function (query, fragments) {
+    if (typeof query == 'object' && query.hasOwnProperty('kind') && query.hasOwnProperty('definitions')) {
+      // This looks like a graphql AST.
+      try {
+        var graphql = require('graphql')
+        query = graphql.print(query)
+      } catch (e) {
+        throw new Error("You tried to pass a graphql syntax tree but it cannot be compiled to string.")
+      }
+    }
     var fragmentRegexp = GraphQLClient.FRAGMENT_PATTERN
     var collectedFragments = this.collectFragments(query, fragments)
     query = query.replace(fragmentRegexp, function (_, $m) {
@@ -226,7 +235,7 @@
   }
 
   GraphQLClient.prototype.buildQuery = function (query, variables) {
-    return this.autoDeclare(this.processQuery(query, this._fragments, variables), variables)
+    return this.autoDeclare(this.processQuery(query, this._fragments), variables)
   }
 
   GraphQLClient.prototype.createSenderFunction = function (url) {

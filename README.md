@@ -53,6 +53,10 @@ bower install graphql.js --save
 #### Using NPM
 ```bash
 npm install graphql.js --save
+
+# or
+
+yarn add graphql.js
 ```
 
 #### Using with Rails Asset Pipeline
@@ -74,6 +78,21 @@ GraphQL.js is **isomorphic**. You can use it in both **browser and Node.js**.
 ```js
 var graphql = require('graphql.js')
 ```
+
+##### Using with `graphql-tag`
+
+`[graphql-tag](https://github.com/apollographql/graphql-tag)` converts GraphQL query strings to AST. You can use `graphql-tag` with GraphQL.js
+
+```js
+var gql = require('graphql-tag')
+var graphql = require('graphql.js')
+
+// setup...
+
+graph.query(gql`query { name }`)
+```
+
+> Using `graphql-tag` will not allow you to use _auto declaration_ and _nested fragments_ syntaxes since these are not valid query syntax for GraphQL but only for this library.
 
 ## Connection
 
