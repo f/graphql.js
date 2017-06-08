@@ -190,7 +190,9 @@
   GraphQLClient.prototype.autoDeclare = function (query, variables) {
     var typeMap = {
       string: "String",
-      number: "Int",
+      number: function (value) {
+        return value % 1 === 0 ? "Int" : "Float";
+      },
       boolean: "Boolean"
     }
     return query.replace(GraphQLClient.AUTODECLARE_PATTERN, function () {
@@ -198,7 +200,9 @@
       for (var key in variables) {
         var value = variables[key]
         var keyAndType = key.split("!")
-        var type = (keyAndType[1] || typeMap[typeof(value)])
+        var mapping = typeMap[typeof(value)]
+        var mappedType = typeof(mapping) === "function" ? mapping(value) : mapping
+        var type = (keyAndType[1] || mappedType)
         if (type) {
           types.push("$" + keyAndType[0] + ": " + type + "!")
         }

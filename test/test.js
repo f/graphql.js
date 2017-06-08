@@ -33,7 +33,7 @@ var queryIn = `query (@autodeclare) {
   }
 }`
 
-var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!) {
+var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!) {
   user(name: $name, bool: $bool, int: $int) {
     ... auth_user
     ... auth_error
@@ -49,7 +49,7 @@ fragment auth_user on User {token, ...user}
 
 fragment auth_error on Error {messages}`
 
-assert.equal(client.buildQuery(queryIn, {name: "fatih", bool: true, int: 2}), expectedQuery)
+assert.equal(client.buildQuery(queryIn, {name: "fatih", bool: true, int: 2, float: 2.3}), expectedQuery)
 
 assert.equal(typeof client.query(`($email: String!, $password: String!) {
   auth(email: $email, password: $password) {
