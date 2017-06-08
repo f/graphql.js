@@ -79,21 +79,6 @@ GraphQL.js is **isomorphic**. You can use it in both **browser and Node.js**.
 var graphql = require('graphql.js')
 ```
 
-##### Using with `graphql-tag`
-
-`[graphql-tag](https://github.com/apollographql/graphql-tag)` converts GraphQL query strings to AST. You can use `graphql-tag` with GraphQL.js
-
-```js
-var gql = require('graphql-tag')
-var graphql = require('graphql.js')
-
-// setup...
-
-graph.query(gql`query { name }`)
-```
-
-> Using `graphql-tag` will not allow you to use _auto declaration_ and _nested fragments_ syntaxes since these are not valid query syntax for GraphQL but only for this library.
-
 ## Connection
 
 Create a simple connection to your GraphQL endpoint.
@@ -469,7 +454,8 @@ fragment username_admin on AdminUser {
 }
 ```
 
-## Using with Vue.js
+## Advanced
+### Using with Vue.js
 
 Create a `GraphQLProvider.js`.
 
@@ -520,7 +506,7 @@ methods: {
 }
 ```
 
-## Change POST Method
+### Change POST Method
 
 As default, GraphQL.js makes a POST request. But you can change the behavior by setting `asJSON`.
 
@@ -529,6 +515,17 @@ var graph = graphql("http://localhost:3000/graphql", {
   asJSON: true
 });
 ```
+### Using with `graphql-tag`
+
+[`graphql-tag`](https://github.com/apollographql/graphql-tag) converts GraphQL query strings to AST. You can use `graphql-tag` with GraphQL.js
+
+```js
+graph.query(gql`query { name }`)
+```
+
+> Using `graphql-tag` will not allow you to use _auto declaration_ and _nested fragments_ syntaxes since these are not valid query syntax for GraphQL but only for this library.
+
+---
 
 ## Todo App Example
 
