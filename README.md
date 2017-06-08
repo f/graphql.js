@@ -200,7 +200,7 @@ var onIncrement = graph.subscribe`onIncrement { state }`
 
 ### Automatic Declaring with `@autodeclare` or `{declare: true}`
 
-Declaring primitive-typed (`String`, `Int`, `Boolean`) variables in query were a
+Declaring primitive-typed (`String`, `Int`, `Float`, `Boolean`) variables in query were a
 little bothering to me. That's why I added an `@autodeclare` keyword or `{declare: true}` setting to the processor.
 It detects types from the variables and declares them in query automatically.
 
