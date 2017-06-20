@@ -170,7 +170,7 @@
     if (typeof query == 'object' && query.hasOwnProperty('kind') && query.hasOwnProperty('definitions')) {
       // This looks like a graphql AST.
       try {
-        var graphql = require('graphql')
+        var graphql = eval('require(\'graphql\')') // webpack tries to include this
         query = graphql.print(query)
       } catch (e) {
         throw new Error("You tried to pass a graphql syntax tree but it cannot be compiled to string.")
