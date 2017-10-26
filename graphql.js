@@ -45,8 +45,11 @@
       for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
       xhr.onerror = function () { callback(xhr, xhr.status) }
       xhr.onload = function () {
-        if (xhr.readyState === xhr.DONE && xhr.status === 200 && xhr.responseText != "") {
+        try {
           callback(JSON.parse(xhr.responseText), xhr.status)
+        }
+        catch (e) {
+          callback(xhr, xhr.status)
         }
       }
       xhr.send(body)
