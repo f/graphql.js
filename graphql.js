@@ -44,7 +44,14 @@
       xhr.setRequestHeader('Accept', 'application/json')
       for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
       xhr.onerror = function () { callback(xhr, xhr.status) }
-      xhr.onload = function () { callback(JSON.parse(xhr.responseText), xhr.status) }
+      xhr.onload = function () {
+        try {
+          callback(JSON.parse(xhr.responseText), xhr.status)
+        }
+        catch (e) {
+          callback(xhr, xhr.status)
+        }
+      }
       xhr.send(body)
     } else if (typeof require == 'function') {
       var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url);
