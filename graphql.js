@@ -103,9 +103,10 @@
     if (!options.fragments)
     options.fragments = {}
 
+    this.url = url
     this.options = options || {}
     this._fragments = this.buildFragments(options.fragments)
-    this._sender = this.createSenderFunction(url)
+    this._sender = this.createSenderFunction()
     this.createHelpers(this._sender)
   }
 
@@ -131,6 +132,15 @@
       }
     }
     return out
+  }
+
+  GraphQLClient.prototype.setUrl = function (url) {
+    this.url = url
+    return this.url
+  }
+
+  GraphQLClient.prototype.getUrl = function () {
+    return this.url
   }
 
   // Gets path from object
@@ -243,7 +253,7 @@
     return this.autoDeclare(this.processQuery(query, this._fragments), variables)
   }
 
-  GraphQLClient.prototype.createSenderFunction = function (url) {
+  GraphQLClient.prototype.createSenderFunction = function () {
     var that = this
     return function (query) {
       if (__isTagCall(query)) {
@@ -256,7 +266,7 @@
         headers = __extend((that.options.headers||{}), (requestOptions.headers||{}))
 
         return new Promise(function (resolve, reject) {
-          __request(that.options.method || "post", url, headers, {
+          __request(that.options.method || "post", that.getUrl(), headers, {
             query: fragmentedQuery,
             variables: that.cleanAutoDeclareAnnotations(variables)
           }, !!that.options.asJSON, function (response, status) {
