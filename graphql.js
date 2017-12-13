@@ -32,6 +32,9 @@
   }
 
   function __request(method, url, headers, data, asJson, callback) {
+    if (!url) {
+      return;
+    }
     if (asJson) {
       var body = JSON.stringify({query: data.query, variables: data.variables});
     } else {

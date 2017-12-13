@@ -33,23 +33,23 @@ assert.equal(
 )
 
 var queryIn = `query (@autodeclare) {
-  user(name: $name, bool: $bool, int: $int) {
-    ...auth.user
-    ...auth.error
-  }
-  x {
-    ... auth.user
-  }
+	user(name: $name, bool: $bool, int: $int) {
+		...auth.user
+		...auth.error
+	}
+	x {
+		... auth.user
+	}
 }`
 
 var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!) {
-  user(name: $name, bool: $bool, int: $int) {
-    ... auth_user
-    ... auth_error
-  }
-  x {
-    ... auth_user
-  }
+	user(name: $name, bool: $bool, int: $int) {
+		... auth_user
+		... auth_error
+	}
+	x {
+		... auth_user
+	}
 }
 
 fragment user on User {name}
@@ -65,54 +65,37 @@ assert.equal(
 
 assert.equal(
 	typeof client.query(`($email: String!, $password: String!) {
-  auth(email: $email, password: $password) {
-    ... on User {
-      token
-    }
-  }
-}`),
+		auth(email: $email, password: $password) {
+			... on User {
+				token
+			}
+		}
+	}`),
 	'function'
 )
 
 /**
- * URL UPDATE TESTING
- */
+* URL UPDATE TESTING
+*/
 
 client.headers({ 'User-Agent': 'Awesome-Octocat-App' })
 var query = client.query(`
 repository(owner:"f", name:"graphql.js") {
-  issues(last:20, states:CLOSED) {
-    edges {
-      node {
-        title
-        url
-      }
-    }
-  }
+	issues(last:20, states:CLOSED) {
+		edges {
+			node {
+				title
+				url
+			}
+		}
+	}
 }`)
 
 // Checking Old URL
 assert.equal(client.getUrl(), null)
 
-// Testing with Github GraphQl
-query()
-	.then(function(params) {
-		console.log('RESPONSE OLD URL: SUCCESS', params)
-	})
-	.catch(function(params) {
-		console.log('RESPONSE OLD URL: ERROR', params)
-	})
-
 // Checking New URL
-let url = 'https://api.github.com/graphql'
-client.setUrl(url)
-assert.equal(client.getUrl(), url)
+var newUrl = 'https://api.github.com/graphql'
+client.setUrl(newUrl)
+assert.equal(client.getUrl(), newUrl)
 
-// Testing with Github GraphQl
-query()
-	.then(function(params) {
-		console.log('\nRESPONSE NEW URL: SUCCESS', params)
-	})
-	.catch(function(params) {
-		console.log('\nRESPONSE NEW URL: ERROR', params)
-	})
