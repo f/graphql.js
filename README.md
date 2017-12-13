@@ -525,6 +525,22 @@ graph.query(gql`query { name }`)
 
 > Using `graphql-tag` will not allow you to use _auto declaration_ and _nested fragments_ syntaxes since these are not valid query syntax for GraphQL but only for this library.
 
+### Change Url Anywhere
+
+You can change url anywhere with `setUrl` method.
+
+```js
+var graph = graphql("http://localhost:3000/graphql", {
+  asJSON: true
+});
+
+// Change url
+graph.setUrl('http://www.example.com')
+
+// Run query
+graph.query(`{ name }`)
+```
+
 ---
 
 ## Todo App Example
