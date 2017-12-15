@@ -31,7 +31,7 @@
     })
   }
 
-  function __request(method, url, headers, data, asJson, callback) {
+  function __request(method, url, headers, data, asJson, onRequestError, callback) {
     if (!url) {
       return;
     }
@@ -76,6 +76,11 @@
           callback(JSON.parse(str), response.statusCode)
         })
       })
+      if (typeof onRequestError === 'function') {
+        req.on('error', function (err) {
+          onRequestError(err);
+        });
+      }
       req.write(body)
       req.end()
     }
@@ -272,7 +277,7 @@
           __request(that.options.method || "post", that.getUrl(), headers, {
             query: fragmentedQuery,
             variables: that.cleanAutoDeclareAnnotations(variables)
-          }, !!that.options.asJSON, function (response, status) {
+          }, !!that.options.asJSON, that.options.onRequestError, function (response, status) {
             if (status == 200) {
               if (response.errors) {
                 reject(response.errors)
