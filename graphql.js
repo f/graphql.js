@@ -278,6 +278,8 @@
                 reject(response.errors)
               } else if (response.data) {
                 resolve(response.data)
+              } else {
+                resolve(response)
               }
             } else {
               reject(response)
