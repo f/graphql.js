@@ -228,6 +228,33 @@ var login = graph.query(`auth(email: $email, password: $password) {
 
 This will also create the same query above.
 
+#### Solving `Integer` and `Float` Problem
+
+Let's say you have a `rating` query that accepts an argument with a `Float` argument named `rating`.
+GraphQL.js will declare `10` value as `Integer` since it casts using `value % 1 === 0 ? 'Int' : 'Float'` check.
+
+```js
+var rate = graph.query(`(@autodeclare) {
+  rating(rating: $rating) {
+    rating
+  }
+}`)
+
+rate({
+  rating: 10
+})
+```
+
+In this case, you must use `!` mark to force your type to be `Float` as below:
+
+```js
+rate({
+  "rating!Float": 10
+})
+```
+
+This will bypass the casting and declare `rating` as `Float`.
+
 ### Advanced Auto Declaring
 
 Beside you can pass `{declare: true}` to helpers:
