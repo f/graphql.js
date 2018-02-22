@@ -45,7 +45,7 @@
       xhr.open(method, url, true)
       xhr.setRequestHeader('Content-Type', (asJson ? 'application/json' : 'application/x-www-form-urlencoded'))
       xhr.setRequestHeader('Accept', 'application/json')
-      xhr.setRequestHeader('Content-Length', 'application/json')
+      xhr.setRequestHeader('Content-Length', body.length)
       for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
       xhr.onerror = function () { callback(xhr, xhr.status) }
       xhr.onload = function () {
