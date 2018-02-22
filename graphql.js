@@ -45,6 +45,7 @@
       xhr.open(method, url, true)
       xhr.setRequestHeader('Content-Type', (asJson ? 'application/json' : 'application/x-www-form-urlencoded'))
       xhr.setRequestHeader('Accept', 'application/json')
+      xhr.setRequestHeader('Content-Length', 'application/json')
       for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
       xhr.onerror = function () { callback(xhr, xhr.status) }
       xhr.onload = function () {
@@ -66,6 +67,7 @@
         method: "POST",
         headers: __extend({
           'Content-type': (asJson ? 'application/json' : 'application/x-www-form-urlencoded'),
+          'Content-Length': body.length,
           'Accept': 'application/json'
         }, headers)
       }, function (response) {
@@ -277,7 +279,7 @@
           __request(that.options.method || "post", that.getUrl(), headers, {
             query: fragmentedQuery,
             variables: that.cleanAutoDeclareAnnotations(variables)
-          }, !!that.options.asJSON, that.options.onRequestError, function (response, status) {
+          }, !!that.options.asJson, that.options.onRequestError, function (response, status) {
             if (status == 200) {
               if (response.errors) {
                 reject(response.errors)
