@@ -35,10 +35,11 @@
     if (!url) {
       return;
     }
+    var body;
     if (asJson) {
-      var body = JSON.stringify({query: data.query, variables: data.variables});
+      body = JSON.stringify({query: data.query, variables: data.variables});
     } else {
-      var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables));
+      body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables));
     }
     if (typeof XMLHttpRequest != 'undefined') {
       var xhr = new XMLHttpRequest;
@@ -119,12 +120,12 @@
   }
 
   // "fragment auth.login" will be "fragment auth_login"
-  FRAGMENT_SEPERATOR = "_";
+  var FRAGMENT_SEPERATOR = "_";
 
   // The autodeclare keyword.
   GraphQLClient.AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/;
 
-  GraphQLClient.FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9\.\_]+)/g;
+  GraphQLClient.FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9._]+)/g;
 
   // Flattens nested object
   /*
@@ -168,8 +169,8 @@
     var that = this;
     var fragmentRegexp = GraphQLClient.FRAGMENT_PATTERN;
     var collectedFragments = []
-    ;(query.match(fragmentRegexp)||[]).forEach(function (fragment) {
-      var path = fragment.replace(fragmentRegexp, function (_, $m) {return $m;});
+    ;(query.match(fragmentRegexp)||[]).forEach(function (f) {
+      var path = f.replace(fragmentRegexp, function (_, $m) {return $m;});
       var fragment = that.fragmentPath(fragments, path);
       if (fragment) {
         var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path));
@@ -271,7 +272,7 @@
         if (!requestOptions) requestOptions = {};
         if (!variables) variables = {};
         var fragmentedQuery = that.buildQuery(query, variables);
-        headers = __extend((that.options.headers||{}), (requestOptions.headers||{}));
+        var headers = __extend((that.options.headers||{}), (requestOptions.headers||{}));
 
         return new Promise(function (resolve, reject) {
           __request(that.options.method || "post", that.getUrl(), headers, {
@@ -367,8 +368,7 @@
   };
 
   GraphQLClient.prototype.ql = function (strings) {
-    var that = this;
-    fragments = Array.prototype.slice.call(arguments, 1);
+    var fragments = Array.prototype.slice.call(arguments, 1);
     fragments = fragments.map(function (fragment) {
       if (typeof fragment == 'string') {
         return fragment.match(/fragment\s+([^\s]*)\s/)[1];
