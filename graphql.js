@@ -207,6 +207,7 @@
   }
 
   GraphQLClient.prototype.autoDeclare = function (query, variables) {
+    var that = this
     var typeMap = {
       string: "String",
       number: function (value) {
@@ -221,6 +222,9 @@
         var keyAndType = key.split("!")
         var mapping = typeMap[typeof(value)]
         var mappedType = typeof(mapping) === "function" ? mapping(value) : mapping
+        if (!key.match("!") && keyAndType[0].match(/_?id/i)) {
+          mappedType = "ID"
+        }
         var type = (keyAndType[1] || mappedType)
         if (type) {
           types.push("$" + keyAndType[0] + ": " + type + "!")

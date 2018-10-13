@@ -33,7 +33,7 @@ assert.equal(
 )
 
 var queryIn = `query (@autodeclare) {
-	user(name: $name, bool: $bool, int: $int) {
+	user(name: $name, bool: $bool, int: $int, id: $id) {
 		...auth.user
 		...auth.error
 	}
@@ -42,8 +42,8 @@ var queryIn = `query (@autodeclare) {
 	}
 }`
 
-var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!) {
-	user(name: $name, bool: $bool, int: $int) {
+var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!, $id: ID!, $user_id: Int!, $post_id: ID!) {
+	user(name: $name, bool: $bool, int: $int, id: $id) {
 		... auth_user
 		... auth_error
 	}
@@ -59,7 +59,7 @@ fragment auth_user on User {token, ...user}
 fragment auth_error on Error {messages}`
 
 assert.equal(
-	client.buildQuery(queryIn, { name: 'fatih', bool: true, int: 2, float: 2.3 }),
+	client.buildQuery(queryIn, { name: 'fatih', bool: true, int: 2, float: 2.3, id: 1, 'user_id!': 2, 'post_id': '45af67cd' }),
 	expectedQuery
 )
 
