@@ -206,7 +206,7 @@ login({
 
 This will create following query:
 
-```js
+```graphql
 query ($email: String!, $password: String!) {
   auth(email: $email, password: $password) {
     ... on User {
@@ -227,6 +227,47 @@ var login = graph.query(`auth(email: $email, password: $password) {
 ```
 
 This will also create the same query above.
+
+#### Detecting IDs
+
+Variable names with matching `/_id/i` pattern will be declared as `ID` type. Following examples will be declared as IDs:
+
+- `id: 1` will be declared as `$id: ID!`
+- `post_id: "123af"` will be declared as `$post_id: ID!`
+- `postID: 3` will be declared as `$postID: ID!`
+- `postId: 4` will be declared as `$postId: ID!`
+
+You can disable auto ID declaration by adding an `!` to the end of the variable name:
+
+- `id!: 1` will be declared as `$id: Int!`
+- `post_id!: "123af"` will be declared as `$post_id: String!`
+
+And, explicitly given types are prioritized.
+
+- `postID!CustomId: 3` will be declared as `$postID: CustomId!`
+- `postId!UUID: 4` will be declared as `$postId: UUID!`
+
+```js
+var userById = graph.query(`(@autodeclare) {
+  user(id: $id) {
+    email
+  }
+}`)
+
+userById({
+  id: 15
+})
+```
+
+The example above will generate following query:
+
+```graphql
+query ($id: ID!) {
+  user(id: $id) {
+    email
+  }
+}
+```
 
 #### Solving `Integer` and `Float` Problem
 
@@ -297,7 +338,7 @@ register({
 
 This will generate following query:
 
-```js
+```graphql
 mutation ($input: UserRegisterInput!) {
   userRegister(input: $input) { ... }
 }
@@ -416,7 +457,7 @@ graph.fragment('login.error')
 
 This will give you the matching fragment code:
 
-```js
+```graphql
 fragment login_error on LoginError {
   reason
 }
@@ -465,7 +506,7 @@ $.post("/graphql", {query: query}, function (response) { ... })
 
 `graph.ql` will generate this query string:
 
-```js
+```graphql
 query {
   ... username_user
   ... username_admin
@@ -607,7 +648,7 @@ function setTodo(id, isCompleted) {
   ) {
     ...todo
   }`, {
-    "id!ID": id,
+    id: id,
     isCompleted: isCompleted
   })
 }
@@ -618,7 +659,7 @@ function removeTodo(id) {
   ) {
     ...todo
   }`, {
-    "id!ID": id
+    id: id
   })
 }
 ```
@@ -627,7 +668,7 @@ function removeTodo(id) {
 
 MIT License
 
-Copyright (c) 2017 Fatih Kadir Akın
+Copyright (c) 2018 Fatih Kadir Akın
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
