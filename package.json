@@ -7,6 +7,10 @@
     "example": "example",
     "test": "test"
   },
+  "files": [
+    "graphql.js",
+    "graphql.min.js"
+  ],
   "scripts": {
     "test": "make test",
     "build": "make build"
