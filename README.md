@@ -1,4 +1,13 @@
-# GraphQL.js - JavaScript GraphQL Client
+<p align="center">
+<img src="./resources/logotype.png" width="400">
+</p>
+<h2 align="center">graphql.js: lightweight graphql client</h2>
+<p align="center">
+ Lightest GraphQL client with intelligent features.
+</p>
+
+<hr/>
+
 [![Bower version](https://badge.fury.io/bo/graphql.js.svg)](http://badge.fury.io/bo/graphql.js)
 [![NPM version](https://badge.fury.io/js/graphql.js.svg)](http://badge.fury.io/js/graphql.js)
 [![Build Status](https://travis-ci.org/f/graphql.js.svg?branch=master)](https://travis-ci.org/f/graphql.js)
