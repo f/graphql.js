@@ -36,21 +36,30 @@ client which manages your query and makes a simple request.
 var graph = graphql("/graphql")
 
 // Prepare...
-graph.fragment({user: `on User { id, name }`})
-var allUsers = graph(`query { allUsers { ...user } }`)
-var createUser = graph(`mutation (@autodeclare) { createUser($firstName, $lastName) { ...user } }`)
+graph.fragment({
+  user: `on User {
+    id,
+    name
+  }`
+})
 
-// Run...
-createUser({
+const allUsers = graph(`query { allUsers { ...user } }`)
+
+const createUser = graph(`mutation (@autodeclare) {
+  createUser($firstName, $lastName) { ...user }
+}`)
+
+await createUser({
   firstName: "John",
   lastName: "Doe"
- }).then(function (user) {
-  console.log(user)
 })
 
-allUsers().then(function (users) {
-  console.log(users)
-})
+const users = await allUsers()
+
+console.log(users)
+// {
+//   "allUsers": [{ "id": 1, "name": "John Doe" }] 
+// }
 ```
 
 ## Installation
