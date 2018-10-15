@@ -36,9 +36,15 @@ client which manages your query and makes a simple request.
 var graph = graphql("/graphql")
 
 // Prepare...
-var allUsers = graph(`query { allUsers {id, name} }`)
+graph.fragment({user: `on User { id, name }`})
+var allUsers = graph(`query { allUsers { ...user } }`)
+var createUser = graph(`mutation (@autodeclare) { createUser($email, $password) { ...user } }`)
 
 // Run...
+createUser({email: "f@github.io", password: "4w3s0m3-pa55w0rd"}).then(function (user) {
+  console.log(user)
+})
+
 allUsers().then(function (users) {
   console.log(users)
 })
