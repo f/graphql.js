@@ -96,6 +96,11 @@ GraphQL.js is **isomorphic**. You can use it in both **browser and Node.js**.
 var graphql = require('graphql.js')
 ```
 
+Or using `import`
+```js
+import graphql from 'graphql.js'
+```
+
 ## Connection
 
 Create a simple connection to your GraphQL endpoint.
