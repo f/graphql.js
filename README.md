@@ -38,10 +38,13 @@ var graph = graphql("/graphql")
 // Prepare...
 graph.fragment({user: `on User { id, name }`})
 var allUsers = graph(`query { allUsers { ...user } }`)
-var createUser = graph(`mutation (@autodeclare) { createUser($email, $password) { ...user } }`)
+var createUser = graph(`mutation (@autodeclare) { createUser($firstName, $lastName) { ...user } }`)
 
 // Run...
-createUser({email: "f@github.io", password: "4w3s0m3-pa55w0rd"}).then(function (user) {
+createUser({
+  firstName: "John",
+  lastName: "Doe"
+ }).then(function (user) {
   console.log(user)
 })
 
