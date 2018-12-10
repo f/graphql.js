@@ -354,28 +354,28 @@
       mergedQueries[method].push(method + " (@autodeclare) {\n" + subQuery + "\n }")
     })
 
-    Promise.all(Object.keys(mergedQueries).map(function (method) {
+    return Promise.all(Object.keys(mergedQueries).map(function (method) {
       var query = mergedQueries[method].join('\n')
       var variables = mergedVariables[method]
       return that._sender(query, query, null, variables)
     })).then(function (responses) {
+      var newResponses = {}
       responses.forEach(function (response) {
         Object.keys(response).forEach(function (mergeKey) {
           var parsedKey = mergeKey.match(/^(merge\d+)\_(.*)/)
+          var reqId = parsedKey[1]
+          var fieldName = parsedKey[2]
           var newResponse = {}
-          newResponse[parsedKey[2]] = response[mergeKey]
-          resolveMap[parsedKey[1]](newResponse)
+          newResponse[fieldName] = response[mergeKey]
+          newResponses[fieldName] = (newResponses[fieldName] || []).concat([response[mergeKey]])
+          resolveMap[reqId](newResponse)
         })
       })
-    }).finally(function () {
+      return newResponses
+    }).finally(function (responses) {
       that._transaction[mergeName] = { query: [], mutation: [] }
+      return responses
     })
-    // console.log(mergedQueries)
-    // console.log(mergedVariables)
-    // console.log(resolveMap)
-    // return this._sender(mergedQuery, mergedQuery, null, mergedVariables).then(function (response) {
-    //   console.log(response)
-    // })
   }
 
   GraphQLClient.prototype.createHelpers = function (sender) {
