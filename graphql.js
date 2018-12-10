@@ -31,7 +31,7 @@
     })
   }
 
-  function __request(method, url, headers, data, asJson, onRequestError, callback) {
+  function __request(debug, method, url, headers, data, asJson, onRequestError, callback) {
     if (!url) {
       return;
     }
@@ -39,6 +39,15 @@
       var body = JSON.stringify({query: data.query, variables: data.variables});
     } else {
       var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
+    }
+    if (debug) {
+      console.groupCollapsed('[graphql]: '
+        + method.toUpperCase() + ' ' + url + ': '
+        + data.query.split(/\n/)[0].substr(0, 50) + '... with '
+        + JSON.stringify(data.variables).substr(0, 50) + '...')
+      console.log('QUERY: %c%s', 'font-weight: bold', data.query)
+      console.log('VARIABLES: %c%s\n\nsending as ' + (asJson ? 'json' : 'form url-data'), 'font-weight: bold', JSON.stringify(data.variables, null, 2), data.variables)
+      console.groupEnd()
     }
     if (typeof XMLHttpRequest != 'undefined') {
       var xhr = new XMLHttpRequest
@@ -114,15 +123,16 @@
     this.url = url
     this.options = options || {}
     this._fragments = this.buildFragments(options.fragments)
-    this._sender = this.createSenderFunction()
+    this._sender = this.createSenderFunction(options.debug)
     this.createHelpers(this._sender)
+    this._transaction = {}
   }
 
   // "fragment auth.login" will be "fragment auth_login"
   FRAGMENT_SEPERATOR = "_"
 
   // The autodeclare keyword.
-  GraphQLClient.AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/
+  GraphQLClient.AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/g
 
   GraphQLClient.FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9\.\_]+)/g
 
@@ -265,9 +275,9 @@
     return this.autoDeclare(this.processQuery(query, this._fragments), variables)
   }
 
-  GraphQLClient.prototype.createSenderFunction = function () {
+  GraphQLClient.prototype.createSenderFunction = function (debug) {
     var that = this
-    return function (query) {
+    return function (query, originalQuery, type) {
       if (__isTagCall(query)) {
         return that.run(that.ql.apply(that, arguments))
       }
@@ -278,7 +288,7 @@
         headers = __extend((that.options.headers||{}), (requestOptions.headers||{}))
 
         return new Promise(function (resolve, reject) {
-          __request(that.options.method || "post", that.getUrl(), headers, {
+          __request(debug, that.options.method || "post", that.getUrl(), headers, {
             query: fragmentedQuery,
             variables: that.cleanAutoDeclareAnnotations(variables)
           }, !!that.options.asJSON, that.options.onRequestError, function (response, status) {
@@ -296,11 +306,76 @@
           })
         })
       }
-      if (arguments.length > 1) {
-        return caller.apply(null, Array.prototype.slice.call(arguments, 1))
+
+      caller.merge = function (mergeName, variables) {
+        that._transaction[mergeName] = that._transaction[mergeName] || {
+          query: [],
+          mutation: []
+        }
+        return new Promise(function (resolve) {
+          that._transaction[mergeName][type].push({
+            type: type,
+            query: originalQuery,
+            variables: variables,
+            resolver: resolve
+          })
+        })
+      }
+      if (arguments.length > 3) {
+        return caller.apply(null, Array.prototype.slice.call(arguments, 3))
       }
       return caller
     }
+  }
+
+  GraphQLClient.prototype.commit = function (mergeName) {
+    var that = this
+    var resolveMap = {}
+    var mergedVariables = {}
+    var mergedQueries = {}
+    Object.keys(this._transaction[mergeName]).forEach(function (method) {
+      if (that._transaction[mergeName][method].length === 0) return
+      var subQuery = that._transaction[mergeName][method].map(function (merge) {
+        var reqId = 'merge' + Math.random().toString().split('.')[1].substr(0, 4)
+        resolveMap[reqId] = merge.resolver
+        var query = merge.query.replace(/\$([^\.\,\s\)]*)/g, function (_, m) {
+          var matchingKey = Object.keys(merge.variables).filter(function (key) {
+            return key === m || key.match(new RegExp('^' + m + '!'))
+          })[0]
+          var variable = reqId + '__' + matchingKey
+          mergedVariables[method] = mergedVariables[method] || {}
+          mergedVariables[method][variable] = merge.variables[matchingKey]
+          return '$' + variable.split('!')[0]
+        })
+        return reqId + '_' + query.trim().match(/^[^\(]+/)[0] + ': ' + query
+      }).join('\n')
+
+      mergedQueries[method] = mergedQueries[method] || []
+      mergedQueries[method].push(method + " (@autodeclare) {\n" + subQuery + "\n }")
+    })
+
+    Promise.all(Object.keys(mergedQueries).map(function (method) {
+      var query = mergedQueries[method].join('\n')
+      var variables = mergedVariables[method]
+      return that._sender(query, query, null, variables)
+    })).then(function (responses) {
+      responses.forEach(function (response) {
+        Object.keys(response).forEach(function (mergeKey) {
+          var parsedKey = mergeKey.match(/^(merge\d+)\_(.*)/)
+          var newResponse = {}
+          newResponse[parsedKey[2]] = response[mergeKey]
+          resolveMap[parsedKey[1]](newResponse)
+        })
+      })
+    }).finally(function () {
+      that._transaction[mergeName] = { query: [], mutation: [] }
+    })
+    // console.log(mergedQueries)
+    // console.log(mergedVariables)
+    // console.log(resolveMap)
+    // return this._sender(mergedQuery, mergedQuery, null, mergedVariables).then(function (response) {
+    //   console.log(response)
+    // })
   }
 
   GraphQLClient.prototype.createHelpers = function (sender) {
@@ -314,12 +389,11 @@
         that.__suffix = ""
         return result
       }
-      var caller = sender(this.prefix + " " + query + " " + this.suffix)
+      var caller = sender(this.prefix + " " + query + " " + this.suffix, query.trim(), this.type)
       if (arguments.length > 1 && arguments[1] != null) {
         return caller.apply(null, Array.prototype.slice.call(arguments, 1))
-      } else {
-        return caller
       }
+      return caller
     }
 
     var helpers = [
@@ -330,17 +404,16 @@
     helpers.forEach(function (m) {
       that[m.method] = function (query, variables, options) {
         if (that.options.alwaysAutodeclare === true || (options && options.declare === true)) {
-          return helper.call({prefix: m.type + " (@autodeclare) {", suffix: "}"}, query, variables)
-        } else {
-          return helper.call({prefix: m.type, suffix: ""}, query, variables)
+          return helper.call({type: m.type, prefix: m.type + " (@autodeclare) {", suffix: "}"}, query, variables)
         }
+        return helper.call({type: m.type, prefix: m.type, suffix: ""}, query, variables)
       }
       that[m.method].run = function (query, options) {
         return that[m.method](query, options)({})
       }
     })
     this.run = function (query) {
-      return sender(query, {})
+      return sender(query, originalQuery, m.type, {})
     }
   }
 
@@ -385,6 +458,29 @@
     query = ((this.__prefix||"") + " " + query + " " + (this.__suffix||"")).trim()
     return query
   }
+
+  // GraphQLClient.prototype.startTransaction = function () {
+  //   if (this.transaction) {
+  //     console.groupEnd()
+  //     console.error('[graphql]: transaction is already started')
+  //     return
+  //   }
+  //   if (this.options.debug) {
+  //     console.group('%c[graphql]: transaction started, following requests will be collected until end', 'font-weight: bold')
+  //   }
+  //   this.transaction = []
+  // }
+
+  // GraphQLClient.prototype.endTransaction = function () {
+  //   if (!this.transaction) {
+  //     console.error('[graphql]: cannot end a transaction which is not started')
+  //     return
+  //   }
+  //   if (this.options.debug) {
+  //     console.groupEnd()
+  //   }
+  //   this.transaction = null
+  // }
 
   ;(function (root, factory) {
     if (typeof define === 'function' && define.amd) {

@@ -58,7 +58,7 @@ const users = await allUsers()
 
 console.log(users)
 // {
-//   "allUsers": [{ "id": 1, "name": "John Doe" }] 
+//   "allUsers": [{ "id": 1, "name": "John Doe" }]
 // }
 ```
 
@@ -551,6 +551,29 @@ fragment username_admin on AdminUser {
   username,
   administrationLevel
 }
+```
+
+## Debugging
+
+You can pass `debug: true` to options parameter to get a console output looks like following:
+
+```
+[graphql]: POST http://localhost:3000/graphql
+  QUERY: query ($email: String!, $password: String!) {
+    auth(email: $email, password: $password) {
+      .. login_auth
+    }
+  }
+
+  fragment info on User { hasPin }
+  fragment login_auth on User { token, ...info }
+
+  VARIABLES: {
+    "email": "p@protel.com.tr",
+    "password": "12345678"
+  }
+
+  sending as form url-data
 ```
 
 ## Advanced

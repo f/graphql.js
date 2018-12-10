@@ -2,33 +2,46 @@
   <head>
     <script src="../graphql.js"></script>
     <script>
-      var graph = graphql("http://localhost:3000/graphql", {
+      var graph = graphql("https://8f0a24.pod-1.api-dev.simprapos.com/admin", {
         alwaysAutodeclare: true,
+        asJSON: true,
+        debug: true,
         headers: {
-          "User-Token": "E4iXrF78TF7V6mYbwEwI"
+          'Auth-Token': 'VXNlcjpmYTc4MDBkNzcyYzUwNGNhN2E4NGFkYzM4N2ZkMzE5Mw=='
         },
         fragments: {
-          info: "on User {hasPin}",
-          login: {
-            auth: "on User {token, ...info}"
-          }
+          tax: "on Tax { id, name }",
+          reason: "on Reason { id, name }"
         }
       })
 
-      var login = graph.query(`
-        auth(email: $email, password: $password) {
-          ... login.auth
-        }`)
+      var allTaxes = graph.query(`
+        taxes(with_inactive: true) {
+          ... tax
+        }
+      `)
 
-      login({
-        email: "p@protel.com.tr",
-        password: "12345678",
-      }).then(function (response) {
-        console.log(response)
+      var allReasons = graph.query(`
+        reasons(with_inactive: true, kind: [returned, cancelled]) {
+          ... reason
+        }
+      `)
+
+      allTaxes.merge('fetchAll').then(function (response) {
+        console.log('Taxes', response)
       })
+
+      allReasons.merge('fetchAll').then(function (response) {
+        console.log('Reasons', response)
+      })
+
+      setTimeout(function () {
+        graph.commit('fetchAll')
+      }, 1000)
+
     </script>
   </head>
   <body>
-    
+
   </body>
 </html>
