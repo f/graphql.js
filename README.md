@@ -558,6 +558,8 @@ fragment username_admin on AdminUser {
 
 ![merge](./resources/graphql-merge.gif)
 
+> This GIF shows a **before/after** case to make an example how query merging changes the performance.
+
 `graphql.js` supports **query merging** that allows you to collect all the requests into one request.
 
 Assume we've these queries on server, define them just like before we do:
