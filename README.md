@@ -556,6 +556,8 @@ fragment username_admin on AdminUser {
 
 ### Query Merging: Merge Multiple Queries into One Request
 
+![merge](./resources/graphql-merge.gif)
+
 `graphql.js` supports **query merging** that allows you to collect all the requests into one request.
 
 Assume we've these queries on server, define them just like before we do:
@@ -663,6 +665,7 @@ And variables will be generated, too:
 > The `merge{number}` aliases won't be passed into your responses, since they will be used for initial seperation.
 
 > ⚠️ **Important Restriction**: You cannot use multiple root fields using query merging.
+> ⚠️ **Important Restriction**: Autodeclaration is on by default, do not use `alwaysAutodeclare: true`.
 
 ## Debugging
 
