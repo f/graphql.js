@@ -275,6 +275,12 @@
     return this.autoDeclare(this.processQuery(query, this._fragments), variables)
   }
 
+  GraphQLClient.prototype.parseType = function (query) {
+    var match = query.trim().match(/^(query|mutation|subscription)/)
+    if (!match) return 'query'
+    return match[1]
+  }
+
   GraphQLClient.prototype.createSenderFunction = function (debug) {
     var that = this
     return function (query, originalQuery, type) {
@@ -308,6 +314,16 @@
       }
 
       caller.merge = function (mergeName, variables) {
+        if (!type) {
+          type = that.parseType(query)
+          query = query.trim()
+            .replace(/^(query|mutation|subscription)\s*/, '').trim()
+            .replace(GraphQLClient.AUTODECLARE_PATTERN, '').trim()
+            .replace(/^\{|\}$/g, '')
+        }
+        if (!originalQuery) {
+          originalQuery = query
+        }
         that._transaction[mergeName] = that._transaction[mergeName] || {
           query: [],
           mutation: []
@@ -329,6 +345,9 @@
   }
 
   GraphQLClient.prototype.commit = function (mergeName) {
+    if (!this._transaction[mergeName]) {
+      throw new Error("You cannot commit the merge " + mergeName + " without creating it first.")
+    }
     var that = this
     var resolveMap = {}
     var mergedVariables = {}
@@ -336,9 +355,12 @@
     Object.keys(this._transaction[mergeName]).forEach(function (method) {
       if (that._transaction[mergeName][method].length === 0) return
       var subQuery = that._transaction[mergeName][method].map(function (merge) {
-        var reqId = 'merge' + Math.random().toString().split('.')[1].substr(0, 4)
+        var reqId = 'merge' + Math.random().toString().split('.')[1].substr(0, 6)
         resolveMap[reqId] = merge.resolver
         var query = merge.query.replace(/\$([^\.\,\s\)]*)/g, function (_, m) {
+          if (!merge.variables) {
+            throw new Error('Unused variable on merge ' + mergeName + ': $' + m[0])
+          }
           var matchingKey = Object.keys(merge.variables).filter(function (key) {
             return key === m || key.match(new RegExp('^' + m + '!'))
           })[0]
@@ -347,7 +369,13 @@
           mergedVariables[method][variable] = merge.variables[matchingKey]
           return '$' + variable.split('!')[0]
         })
-        return reqId + '_' + query.trim().match(/^[^\(]+/)[0] + ': ' + query
+        var alias = query.trim().match(/^[^\(]+\:/)
+        if (!alias) {
+          alias = query.replace(/^\{|\}$/gm, '').trim().match(/^[^\(\{]+/)[0] + ':'
+        } else {
+          query = query.replace(/^[^\(]+\:/, '')
+        }
+        return reqId + '_' + alias + query
       }).join('\n')
 
       mergedQueries[method] = mergedQueries[method] || []
@@ -363,6 +391,9 @@
       responses.forEach(function (response) {
         Object.keys(response).forEach(function (mergeKey) {
           var parsedKey = mergeKey.match(/^(merge\d+)\_(.*)/)
+          if (!parsedKey) {
+            throw new Error('Multiple root keys detected on response. Merging doesn\'t support it yet.')
+          }
           var reqId = parsedKey[1]
           var fieldName = parsedKey[2]
           var newResponse = {}
@@ -458,29 +489,6 @@
     query = ((this.__prefix||"") + " " + query + " " + (this.__suffix||"")).trim()
     return query
   }
-
-  // GraphQLClient.prototype.startTransaction = function () {
-  //   if (this.transaction) {
-  //     console.groupEnd()
-  //     console.error('[graphql]: transaction is already started')
-  //     return
-  //   }
-  //   if (this.options.debug) {
-  //     console.group('%c[graphql]: transaction started, following requests will be collected until end', 'font-weight: bold')
-  //   }
-  //   this.transaction = []
-  // }
-
-  // GraphQLClient.prototype.endTransaction = function () {
-  //   if (!this.transaction) {
-  //     console.error('[graphql]: cannot end a transaction which is not started')
-  //     return
-  //   }
-  //   if (this.options.debug) {
-  //     console.groupEnd()
-  //   }
-  //   this.transaction = null
-  // }
 
   ;(function (root, factory) {
     if (typeof define === 'function' && define.amd) {
