@@ -2,47 +2,29 @@
   <head>
     <script src="../graphql.js"></script>
     <script>
-      var graph = graphql("https://example.com/graphql", {
+      var graph = graphql("https://graphql-pokemon.now.sh", {
         alwaysAutodeclare: true,
         asJSON: true,
         debug: true
       })
 
-      var postId = 123
+      var name = "pikachu"
 
-      var fetchPost = graph.query(`{
-        post(id: $id) {
+      var pokemonImage = graph.query(`
+        pokemon(name: $name) {
+          image
+        }
+      `)
+
+      var pokemonId = graph.query(`
+        pokemon(name: $name) {
           id
-          title
-          text
         }
-      }`)
+      `)
 
-      var fetchComments = graph.query(`{
-        comments(postId: $postId) {
-          comment
-          owner {
-            name
-          }
-        }
-      }`)
-
-      // This won't send a request.
-      fetchPost.merge('buildPage', { id: postId }).then(function (post) {
-        console.log(post)
-      })
-
-      // This also won't send a request.
-      fetchComments.merge('buildPage', { postId: postId }).then(function (comments) {
-        console.log(comments)
-      })
-
-      // This will send a merged request:
-      graph.commit('buildPage').then(function (response) {
-        // All base fields will be in response return.
-        console.log(response.post)
-        console.log(response.comments)
-      })
+      pokemonId.merge('poke', {name: "Pikachu"})
+      pokemonImage.merge('poke', {name: "Bulbasaur"})
+      graph.commit('poke')
     </script>
   </head>
   <body>
