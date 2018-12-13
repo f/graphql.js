@@ -2,22 +2,24 @@
   "name": "graphql.js",
   "version": "0.6.1",
   "description": "GraphQL Client for JavaScript",
-  "main": "graphql.js",
+  "main": "dist/graphql.js",
   "directories": {
     "example": "example",
     "test": "test"
   },
   "files": [
-    "graphql.js",
-    "graphql.min.js"
+    "dist/graphql.js"
   ],
   "scripts": {
-    "test": "make test",
-    "build": "make build"
+    "doc": "jsdoc --configure .jsdoc.json --verbose",
+    "test": "jest",
+    "dev": "poi example/main.js --serve",
+    "prettier": "prettier --single-quote --write src/**/*.js",
+    "build": "poi src/graphql.js --prod --format umd --module-name graphql --file-names.js graphql.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/f/graphql-client.git"
+    "url": "git+https://github.com/f/graphql.js.git"
   },
   "keywords": [
     "graphql",
@@ -29,7 +31,27 @@
   "author": "Fatih Kadir Akın <fatihkadirakin@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/f/graphql-client/issues"
+    "url": "https://github.com/f/graphql.js/issues"
   },
-  "homepage": "https://github.com/f/graphql-client#readme"
+  "homepage": "https://github.com/f/graphql.js#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-preset-env": "^1.7.0",
+    "docdash": "^1.0.1",
+    "eslint": ">=5.0.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-config-standard": "12.0.0",
+    "eslint-plugin-import": ">=2.13.0",
+    "eslint-plugin-jest": "^22.1.2",
+    "eslint-plugin-node": ">=7.0.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-promise": ">=4.0.0",
+    "eslint-plugin-standard": ">=4.0.0",
+    "jest": "^23.6.0",
+    "jsdoc": "^3.5.5",
+    "poi": "^12.0.2",
+    "prettier": "^1.15.3",
+    "regenerator-runtime": "^0.13.1"
+  }
 }

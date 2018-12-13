@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>request.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-builder.html">builder</a><ul class='methods'><li data-type='method'><a href="module-builder.html#.autoDeclare">autoDeclare</a></li><li data-type='method'><a href="module-builder.html#.buildFragments">buildFragments</a></li><li data-type='method'><a href="module-builder.html#.findType">findType</a></li></ul></li><li><a href="module-request.html">request</a><ul class='methods'><li data-type='method'><a href="module-request.html#.debugRequest">debugRequest</a></li><li data-type='method'><a href="module-request.html#.generateRequestBody">generateRequestBody</a></li><li data-type='method'><a href="module-request.html#.generateRequestHeaders">generateRequestHeaders</a></li><li data-type='method'><a href="module-request.html#.tryToParseJSON">tryToParseJSON</a></li></ul></li><li><a href="module-utils.html">utils</a><ul class='methods'><li data-type='method'><a href="module-utils.html#.flatten">flatten</a></li><li data-type='method'><a href="module-utils.html#.isBrowser">isBrowser</a></li><li data-type='method'><a href="module-utils.html#.isTag">isTag</a></li><li data-type='method'><a href="module-utils.html#.uniq">uniq</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">request.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * ## Requesting to GraphQL Server
+ * This is the utility file to help **graphql.js**.
+ * All the functions which are not related to graphql should
+ * be here.
+ * @module request
+ */
+
+import { isBrowser } from './utils'
+
+/**
+ * Puts a detailed log string to the `console`.
+ * @param {Object} options The `options` parameter for debugging
+ * @param {string} options.method The method, GET or POST
+ * @param {string} options.url The URL to send the request
+ * @param {Object} options.data The data object to send to the GraphQL server
+ * @param {string} options.data.query The GraphQL Query
+ * @param {Object.&lt;string,*>} options.data.variables The variables for the GraphQL query
+ * @param {Boolean} options.asJSON If the request is JSON or form-data
+ * @returns {void}
+ */
+export function debugRequest({ method, url, data, asJSON }) {
+  if (!console) return
+  console.groupCollapsed(
+    `[graphql]     ${method.toUpperCase()} ${url}:
+  query     : ${data.query.split(/\n/)[0].substr(0, 50)}...
+  variables : ${JSON.stringify(data.variables).substr(0, 50)}...`
+  )
+  console.log('QUERY: %c%s', 'font-weight: bold', data.query)
+  console.log(
+    'VARIABLES: %c%s\n\nsending as ' + (asJSON ? 'json' : 'form url-data'),
+    'font-weight: bold',
+    JSON.stringify(data.variables, null, 2),
+    data.variables
+  )
+  console.groupEnd()
+}
+
+/**
+ * Tries to parse JSON, fallbacks to string itself.
+ * @param {string} text The JSON text to be parsed.
+ * @returns {(Object|string)}
+ */
+export function tryToParseJSON(text) {
+  try {
+    return JSON.parse(text)
+  } catch (e) {
+    return text
+  }
+}
+
+/**
+ * Generates header part of request for GraphQL server. Adds `Accept` and `Content-Type`
+ * @param {Object&lt;string,string>} headers The headers object to be built
+ * @param {Boolean} asJSON Defines `Content-Type` according to this value
+ */
+export function generateRequestHeaders(headers, asJSON = true) {
+  return {
+    'Content-Type': asJSON ? 'application/json' : 'application/x-www-form-urlencoded',
+    Accept: 'application/json',
+    ...headers
+  }
+}
+
+/**
+ * Generates body part of request for GraphQL server.
+ * @param {string} query The GraphQL query
+ * @param {Object&lt;string,*>} variables The variables for the GraphQL query
+ * @param {Boolean} asJSON Defines `Content-Type` according to this value
+ */
+export function generateRequestBody(query, variables = {}, asJSON = true) {
+  if (asJSON) {
+    return JSON.stringify({ query, variables })
+  }
+  return `query=${encodeURIComponent(query)}&amp;variables=${encodeURIComponent(JSON.stringify(variables))}`
+}
+
+export function browserRequest({ method, url, headers, asJSON, body, success, error, data, debugMode }) {
+  const requestHeaders = generateRequestHeaders(headers, asJSON)
+  const xhr = new XMLHttpRequest()
+  xhr.open(method, url, true)
+  for (let key in requestHeaders) {
+    xhr.setRequestHeader(key, requestHeaders[key])
+  }
+  xhr.onload = () => success(tryToParseJSON(xhr.responseText), xhr.status)
+  if (typeof error === 'function') {
+    xhr.onerror = () => error(xhr.responseText, xhr.status)
+  }
+  xhr.send(body)
+  if (debugMode) debugRequest({ method, url, data, asJSON })
+}
+
+export function nodeRequest({ method, url, headers, asJSON, body, success, error }) {
+  const requestHeaders = generateRequestHeaders(headers, asJSON)
+  const http = require('http')
+  const https = require('https')
+  const URL = require('url')
+  const uri = URL(url)
+  const requestor = uri.protocol === 'https:' ? https : http
+  const request = requestor.request(
+    {
+      ...uri,
+      method: method,
+      headers: requestHeaders
+    },
+    response => {
+      let responseText = ''
+      response.setEncoding('utf8')
+      response.on('data', data => (responseText += data))
+      response.on('end', () => success(tryToParseJSON(responseText), response.statusCode))
+    }
+  )
+  if (typeof error === 'function') {
+    request.on('error', e => error(e))
+  }
+  request.write(body)
+  request.end()
+}
+
+export default function request(opts) {
+  const options = {
+    method: 'POST',
+    url: '',
+    headers: {},
+    data: {
+      query: '',
+      variables: {}
+    },
+    error: () => {},
+    success: () => {},
+    debugMode: false,
+    asJSON: true,
+    ...opts
+  }
+
+  const { query, variables } = options.data
+  const body = generateRequestBody(query, variables, options.asJSON)
+
+  return (isBrowser() ? browserRequest : nodeRequest)({ ...options, body })
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 00:56:46 GMT+0300 (GMT+03:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

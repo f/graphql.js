@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>builder.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-builder.html">builder</a><ul class='methods'><li data-type='method'><a href="module-builder.html#.autoDeclare">autoDeclare</a></li><li data-type='method'><a href="module-builder.html#.buildFragments">buildFragments</a></li><li data-type='method'><a href="module-builder.html#.findType">findType</a></li></ul></li><li><a href="module-request.html">request</a><ul class='methods'><li data-type='method'><a href="module-request.html#.debugRequest">debugRequest</a></li><li data-type='method'><a href="module-request.html#.generateRequestBody">generateRequestBody</a></li><li data-type='method'><a href="module-request.html#.generateRequestHeaders">generateRequestHeaders</a></li><li data-type='method'><a href="module-request.html#.tryToParseJSON">tryToParseJSON</a></li></ul></li><li><a href="module-utils.html">utils</a><ul class='methods'><li data-type='method'><a href="module-utils.html#.flatten">flatten</a></li><li data-type='method'><a href="module-utils.html#.isBrowser">isBrowser</a></li><li data-type='method'><a href="module-utils.html#.isTag">isTag</a></li><li data-type='method'><a href="module-utils.html#.uniq">uniq</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">builder.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * ## Building Queries
+ * Builds queries, auto declarations and type finders.
+ * @module builder
+ */
+
+import { flatten } from './utils'
+
+const AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/
+// const FRAGMENT_PATTERN = /\.\.\.\s*([A-Za-z0-9._]+)/g
+
+/**
+ * Converts JavaScript primitive types into GraphQL primitive types.
+ */
+const TYPE_CONVERSION_MAP = {
+  string: 'String',
+  number: value => (value % 1 === 0 ? 'Int' : 'Float'),
+  boolean: 'Boolean'
+}
+
+/**
+ * @typedef {Object} DetectedType
+ * @property {string} key The key of given key definition
+ * @property {any} value Given value
+ * @property {string} type Detected type of given value
+ */
+
+/**
+ * Finds the type according to given key and value
+ * @param {string} keyDefinition The key or key definition with ! syntax.
+ * @param {any} value The value to be detected.
+ * @returns {DetectedType} The detected type
+ */
+export function findType(keyDefinition, value) {
+  const [key, forcedType] = keyDefinition.split('!')
+  if (forcedType) {
+    return { key, value, type: forcedType }
+  }
+  const jsType = typeof value
+  const converter = TYPE_CONVERSION_MAP[jsType]
+  if (!converter) {
+    throw new Error(`${jsType} is not a detectable type for graphql.js`)
+  }
+
+  if (!keyDefinition.match('!') &amp;&amp; key.match(/_?id$/i)) {
+    return { key, value, type: 'ID' }
+  }
+  const type = typeof converter === 'function' ? converter(value) : converter
+  return { key, value, type }
+}
+
+/**
+ * Builds the nested fragments object into flatten fragments
+ * @param {Object.&lt;string, string>} fragments The object of fragments
+ */
+export function buildFragments(fragments = {}) {
+  const flattenFragments = flatten(fragments)
+  const fragmentObject = {}
+  for (let name in flattenFragments) {
+    let fragment = flattenFragments[name]
+    if (!fragment.toString().match(/^on\s(\w+)/)) {
+      throw new Error('Fragments must start with `on {TypeName}`')
+    }
+    fragmentObject[name] = `fragment ${name} ${fragment}`
+  }
+  return fragmentObject
+}
+
+/**
+ * Converts `(@autodeclare)` string into GraphQL type definition
+ * string using given variables.
+ *
+ * @param {string} query
+ * @param {Object} variables
+ *
+ * @returns {string} The auto declared query.
+ */
+export function autoDeclare(query, variables = {}) {
+  const keys = Object.keys(variables)
+  if (!keys.length) {
+    return query.replace(AUTODECLARE_PATTERN, '')
+  }
+  const types = keys
+    .map(key => findType(key, variables[key]))
+    .map(({ key, type }) => `$${key}: ${type}!`)
+    .join(', ')
+  return query.replace(AUTODECLARE_PATTERN, types ? `(${types})` : '')
+}
+
+export function cleanKeys(variables = {}) {
+  const cleanVariables = {}
+  for (let key in variables) {
+    let value = variables[key]
+    let [cleanKey] = key.split('!')
+    cleanVariables[cleanKey] = value
+  }
+  return cleanVariables
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 00:56:46 GMT+0300 (GMT+03:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

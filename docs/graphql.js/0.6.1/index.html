@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-builder.html">builder</a><ul class='methods'><li data-type='method'><a href="module-builder.html#.autoDeclare">autoDeclare</a></li><li data-type='method'><a href="module-builder.html#.buildFragments">buildFragments</a></li><li data-type='method'><a href="module-builder.html#.findType">findType</a></li></ul></li><li><a href="module-request.html">request</a><ul class='methods'><li data-type='method'><a href="module-request.html#.debugRequest">debugRequest</a></li><li data-type='method'><a href="module-request.html#.generateRequestBody">generateRequestBody</a></li><li data-type='method'><a href="module-request.html#.generateRequestHeaders">generateRequestHeaders</a></li><li data-type='method'><a href="module-request.html#.tryToParseJSON">tryToParseJSON</a></li></ul></li><li><a href="module-utils.html">utils</a><ul class='methods'><li data-type='method'><a href="module-utils.html#.flatten">flatten</a></li><li data-type='method'><a href="module-utils.html#.isBrowser">isBrowser</a></li><li data-type='method'><a href="module-utils.html#.isTag">isTag</a></li><li data-type='method'><a href="module-utils.html#.uniq">uniq</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><p align="center">
+<img src="./resources/logotype.png" width="400">
+</p>
+<h2 align="center">graphql.js: lightweight graphql client</h2>
+<p align="center">
+ Lightest GraphQL client with intelligent features.
+</p>
+
+<hr/>
+
+<p><a href="http://badge.fury.io/bo/graphql.js"><img src="https://badge.fury.io/bo/graphql.js.svg" alt="Bower version"></a>
+<a href="http://badge.fury.io/js/graphql.js"><img src="https://badge.fury.io/js/graphql.js.svg" alt="NPM version"></a>
+<a href="https://travis-ci.org/f/graphql.js"><img src="https://travis-ci.org/f/graphql.js.svg?branch=master" alt="Build Status"></a></p>
+<blockquote>
+<p>Originally inspired by <a href="http://rmosolgo.github.io/blog/2016/03/03/using-graphql-without-relay/">Robert Mosolgo's blog post</a></p>
+</blockquote>
+<h3>Features</h3><ul>
+<li>No dependencies, plain vanilla JavaScript.</li>
+<li>Plug &amp; Play.</li>
+<li>Isomorphic.</li>
+<li>Runs on most browsers.</li>
+<li>You don't need to install Node.js ecosystem on your computer.</li>
+<li>Query merging to reduce request number.</li>
+</ul>
+<h2>Overview</h2><p>GraphQL is based on a very simple HTTP transaction, which sends a request to an endpoint
+with <code>query</code> and <code>variables</code>.</p>
+<p>Many libraries require <em>complex stacks</em> to make that simple request.
+In any project you don't use <strong>React</strong>, <strong>Relay</strong>, you'll need a simpler
+client which manages your query and makes a simple request.</p>
+<pre class="prettyprint source lang-js"><code>// Connect...
+var graph = graphql(&quot;/graphql&quot;)
+
+// Prepare...
+graph.fragment({
+  user: `on User {
+    id,
+    name
+  }`
+})
+
+const allUsers = graph(`query { allUsers { ...user } }`)
+
+const createUser = graph(`mutation (@autodeclare) {
+  createUser($firstName, $lastName) { ...user }
+}`)
+
+await createUser({
+  firstName: &quot;John&quot;,
+  lastName: &quot;Doe&quot;
+})
+
+const users = await allUsers()
+
+console.log(users)
+// {
+//   &quot;allUsers&quot;: [{ &quot;id&quot;: 1, &quot;name&quot;: &quot;John Doe&quot; }]
+// }</code></pre><h2>Installation</h2><p>You can download <code>graphql.js</code> directly, or you can use <strong>Bower</strong> or <strong>NPM</strong>.</p>
+<h4>Download for Browser</h4><ul>
+<li><a href="https://raw.githubusercontent.com/f/graphql.js/master/graphql.js">Development Version - 12kb</a></li>
+<li><a href="https://raw.githubusercontent.com/f/graphql.js/master/graphql.min.js">Production Version - 6kb</a></li>
+</ul>
+<h4>Using Bower</h4><pre class="prettyprint source lang-bash"><code>bower install graphql.js --save</code></pre><h4>Using NPM</h4><pre class="prettyprint source lang-bash"><code>npm install graphql.js --save
+
+# or
+
+yarn add graphql.js</code></pre><h4>Using with Rails Asset Pipeline</h4><p>You can use GraphQL.js with Rails Asset Pipeline using <a href="https://github.com/f/graphqljs-rails">graphqljs-rails</a>.</p>
+<h2>Using</h2><p>GraphQL.js is <strong>isomorphic</strong>. You can use it in both <strong>browser and Node.js</strong>.</p>
+<h4>Use in Browser</h4><pre class="prettyprint source lang-html"><code>&lt;script src=&quot;/path/to/graphql.js&quot;>&lt;/script></code></pre><h4>Use in Node.js</h4><pre class="prettyprint source lang-js"><code>var graphql = require('graphql.js')</code></pre><p>Or using <code>import</code></p>
+<pre class="prettyprint source lang-js"><code>import graphql from 'graphql.js'</code></pre><h2>Connection</h2><p>Create a simple connection to your GraphQL endpoint.</p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;http://localhost:3000/graphql&quot;, {
+  method: &quot;POST&quot;, // POST by default.
+  headers: {
+    // headers
+    &quot;Access-Token&quot;: &quot;some-access-token&quot;
+  },
+  fragments: {
+    // fragments, you don't need to say `fragment name`.
+    auth: &quot;on User { token }&quot;,
+    error: &quot;on Error { messages }&quot;
+  }
+})</code></pre><h2>Executing Queries and Mutations</h2><p><code>graph</code> will be a simple function that accepts <code>query</code> and <code>variables</code> as parameters.</p>
+<pre class="prettyprint source lang-js"><code>graph(`query ($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... auth # if you use any fragment, it will be added to the query.
+    ... error
+  }
+}`, {
+  email: &quot;john@doe.com&quot;,
+  password: &quot;my-super-password&quot;
+}).then(function (response) {
+  // response is originally response.data of query result
+  console.log(response)
+}).catch(function (error) {
+  // response is originally response.errors of query result
+  console.log(error)
+})</code></pre><h3>Prepare Query for Lazy Execution</h3><p>You can prepare queries for lazy execution. This will allow you to reuse your queries with
+different variables without any hassle.</p>
+<pre class="prettyprint source lang-js"><code>var login = graph(`query ($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`)
+
+// Call it later...
+login({
+  email: &quot;john@doe.com&quot;,
+  password: &quot;my-super-password&quot;
+})</code></pre><h4>Direct Execution with <code>.run</code> and ES6 Template Tag</h4><p>If your query doesn't need any variables, it will generate a lazy execution query by default.
+If you want to run your query immediately, you have three following options:</p>
+<pre class="prettyprint source lang-js"><code>// 1st option. create and run function.
+graph(`...`)()
+graph.query(`...`)()
+graph.mutate(`...`)()
+//...
+
+// 2nd option. create and run function with `run` method.
+graph.run(`...`)
+graph.query.run(`...`)
+graph.mutate.run(`...`)
+
+// 3rd option. create and run function with template tag.
+graph`...`
+graph.query`...`
+graph.mutate`...`</code></pre><blockquote>
+<p><strong>I don't recommend</strong> using this. Using it too much may break DRY. Use lazy execution as much as possible.</p>
+</blockquote>
+<h3>Prefix Helpers</h3><p>You can prefix your queries by simply calling helper methods: <code>.query</code>, <code>.mutate</code> or <code>.subscribe</code></p>
+<pre class="prettyprint source lang-js"><code>var login = graph.query(`($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`)
+
+var increment = graph.mutate`increment { state }`
+var onIncrement = graph.subscribe`onIncrement { state }`</code></pre><h3>Automatic Declaring with <code>@autodeclare</code> or <code>{declare: true}</code></h3><p>Declaring primitive-typed (<code>String</code>, <code>Int</code>, <code>Float</code>, <code>Boolean</code>) variables in query were a
+little bothering to me. That's why I added an <code>@autodeclare</code> keyword or <code>{declare: true}</code> setting to the processor.
+It detects types from the variables and declares them in query automatically.</p>
+<pre class="prettyprint source lang-js"><code>var login = graph.query(`(@autodeclare) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}`)
+
+login({
+  email: &quot;john@doe.com&quot;, // It's String! obviously.
+  password: &quot;my-super-password&quot; // It is, too.
+})</code></pre><p>This will create following query:</p>
+<pre class="prettyprint source lang-graphql"><code>query ($email: String!, $password: String!) {
+  auth(email: $email, password: $password) {
+    ... on User {
+      token
+    }
+  }
+}</code></pre><p>You can also pass <code>{declare: true}</code> option to the <code>.query</code>, <code>.mutate</code> and <code>.subscribe</code> helper:</p>
+<pre class="prettyprint source lang-js"><code>var login = graph.query(`auth(email: $email, password: $password) {
+  ... on User {
+    token
+  }
+}`, {declare: true})</code></pre><p>This will also create the same query above.</p>
+<h4>Detecting IDs</h4><p>Variable names with matching <code>/_id/i</code> pattern will be declared as <code>ID</code> type. Following examples will be declared as IDs:</p>
+<ul>
+<li><code>id: 1</code> will be declared as <code>$id: ID!</code></li>
+<li><code>post_id: &quot;123af&quot;</code> will be declared as <code>$post_id: ID!</code></li>
+<li><code>postID: 3</code> will be declared as <code>$postID: ID!</code></li>
+<li><code>postId: 4</code> will be declared as <code>$postId: ID!</code></li>
+</ul>
+<p>You can disable auto ID declaration by adding an <code>!</code> to the end of the variable name:</p>
+<ul>
+<li><code>id!: 1</code> will be declared as <code>$id: Int!</code></li>
+<li><code>post_id!: &quot;123af&quot;</code> will be declared as <code>$post_id: String!</code></li>
+</ul>
+<p>And, explicitly given types are prioritized.</p>
+<ul>
+<li><code>postID!CustomId: 3</code> will be declared as <code>$postID: CustomId!</code></li>
+<li><code>postId!UUID: 4</code> will be declared as <code>$postId: UUID!</code></li>
+</ul>
+<pre class="prettyprint source lang-js"><code>var userById = graph.query(`(@autodeclare) {
+  user(id: $id) {
+    email
+  }
+}`)
+
+userById({
+  id: 15
+})</code></pre><p>The example above will generate following query:</p>
+<pre class="prettyprint source lang-graphql"><code>query ($id: ID!) {
+  user(id: $id) {
+    email
+  }
+}</code></pre><h4>Solving <code>Integer</code> and <code>Float</code> Problem</h4><p>Let's say you have a <code>rating</code> query that accepts an argument with a <code>Float</code> argument named <code>rating</code>.
+GraphQL.js will declare <code>10</code> value as <code>Integer</code> since it casts using <code>value % 1 === 0 ? 'Int' : 'Float'</code> check.</p>
+<pre class="prettyprint source lang-js"><code>var rate = graph.query(`(@autodeclare) {
+  rating(rating: $rating) {
+    rating
+  }
+}`)
+
+rate({
+  rating: 10
+})</code></pre><p>In this case, you must use <code>!</code> mark to force your type to be <code>Float</code> as below:</p>
+<pre class="prettyprint source lang-js"><code>rate({
+  &quot;rating!Float&quot;: 10
+})</code></pre><p>This will bypass the casting and declare <code>rating</code> as <code>Float</code>.</p>
+<h3>Advanced Auto Declaring</h3><p>Beside you can pass <code>{declare: true}</code> to helpers:</p>
+<pre class="prettyprint source lang-js"><code>graph.query(&quot;auth(email: $email, password: $password) { token }&quot;, {declare: true})</code></pre><p>Also you can enable auto declaration to run by default using <code>alwaysAutodeclare</code> setting.</p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;http://localhost:3000/graphql&quot;, {
+  alwaysAutodeclare: true
+})</code></pre><p>After you enable <code>alwaysAutodeclare</code> option, your methods will try to detect types of variables and declare them.</p>
+<pre class="prettyprint source lang-js"><code>// When alwaysAutodeclare is true, you don't have to pass {declare: true} option.
+
+graph.query(&quot;auth(email: $email, password: $password) { token }&quot;)</code></pre><h4>Auto Declaring Custom Types</h4><p>You can define custom types when defining variables by using a simple <code>&quot;variable!Type&quot;</code> notation.
+It will help you to make more complex variables:</p>
+<pre class="prettyprint source lang-js"><code>var register = graph.mutate(`(@autodeclare) {
+  userRegister(input: $input) { ... }
+}`)
+
+register({
+  // variable name and type.
+  &quot;input!UserRegisterInput&quot;: { ... }
+})</code></pre><p>This will generate following query:</p>
+<pre class="prettyprint source lang-graphql"><code>mutation ($input: UserRegisterInput!) {
+  userRegister(input: $input) { ... }
+}</code></pre><h2>Fragments</h2><p>Fragments make your GraphQL more DRY and improves reusability. With <code>.fragment</code> method, you'll
+manage your fragments easily.</p>
+<h3>Simple Fragments</h3><p>While constructing your endpoint, you can predefine all of your fragments.</p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;/graphql&quot;, {
+  fragments: {
+    userInfo: `on User { id, name, surname, avatar }`
+  }
+})</code></pre><p>And you can use your fragments in your queries. The query will pick your fragments and
+will add them to the bottom of your query.</p>
+<pre class="prettyprint source lang-js"><code>graph.query(`{ allUsers { ...userInfo } }`)</code></pre><h3>Nested Fragments</h3><p>You can nest your fragments to keep them organized/namespaced.</p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;/graphql&quot;, {
+  fragments: {
+    user: {
+      info: `on User { id, name, surname, avatar }`
+    }
+  }
+})</code></pre><p>Accessing them is also intuitive:</p>
+<pre class="prettyprint source lang-js"><code>graph.query(`{ allUsers { ...user.info } }`)</code></pre><h3>Using Fragments in Fragments</h3><p>You can reuse fragments in your fragments.</p>
+<pre class="prettyprint source lang-js"><code>graph.fragment({
+  user: &quot;on User {name, surname}&quot;,
+  login: {
+    auth: &quot;on User {token, ...user}&quot;
+  }
+})</code></pre><h3>Lazy Fragments</h3><p>You can also add fragments lazily. So you can use your fragments more modular.</p>
+<pre class="prettyprint source lang-js"><code>// Adds a profile fragment
+graph.fragment({
+  profile: `on User {
+    id
+    name(full: true)
+    avatar
+  }`
+})
+
+var allUsers = graph.query(`{
+  allUsers {
+    ... profile
+  }
+}`)
+
+allUsers().then(...)</code></pre><p>Also you can add <strong>nested fragments</strong> lazily, too:</p>
+<pre class="prettyprint source lang-js"><code>graph.fragment({
+  login: {
+    error: `on LoginError {
+      reason
+    }`
+  }
+})
+
+graph.fragment({
+  something: {
+    error: `on SomeError {
+      messages
+    }`
+  }
+})
+
+graph.query(`{ login {... login.error } }`)
+graph.query(`{ something {... something.error } }`)</code></pre><h3>Getting Fragments by Path</h3><p>You can call fragment string by using <code>.fragment</code> method. You have to pass path string to get the fragment.</p>
+<pre class="prettyprint source lang-js"><code>graph.fragment('login.error')</code></pre><p>This will give you the matching fragment code:</p>
+<pre class="prettyprint source lang-graphql"><code>fragment login_error on LoginError {
+  reason
+}</code></pre><h3>Using Fragments in Tag Query</h3><p>You can use fragments lazily using ES6 template tag queries.</p>
+<pre class="prettyprint source lang-js"><code>var userProfileToShow = graph.fragment('user.profile')
+
+graph`query { ... ${userProfileToShow} }`</code></pre><h3>Query Building</h3><p>You can create queries using <code>.ql</code> <strong>ES6 template tag</strong>.</p>
+<pre class="prettyprint source lang-js"><code>// Add some fragments...
+graph.fragment({
+  username: {
+    user: `on User {
+      username
+    }`,
+    admin: `on AdminUser {
+      username,
+      administrationLevel
+    }`
+  }
+})
+
+// Get any fragment with its path...
+var admin = graph.fragment('username.admin')
+
+// Build your query with using fragment paths or dynamic template variables.
+var query = graph.ql`query {
+  ...username.user
+  ...${admin}
+}`
+
+// Use query anywhere...
+$.post(&quot;/graphql&quot;, {query: query}, function (response) { ... })</code></pre><p><code>graph.ql</code> will generate this query string:</p>
+<pre class="prettyprint source lang-graphql"><code>query {
+  ... username_user
+  ... username_admin
+}
+
+fragment username_user on User {
+  username
+}
+
+fragment username_admin on AdminUser {
+  username,
+  administrationLevel
+}</code></pre><h3>Query Merging: Merge Multiple Queries into One Request</h3><p><img src="./resources/graphql-merge.gif" alt="merge"></p>
+<blockquote>
+<p>This GIF shows a <strong>before/after</strong> case to make an example how query merging changes the performance.</p>
+</blockquote>
+<p><code>graphql.js</code> supports <strong>query merging</strong> that allows you to collect all the requests into one request.</p>
+<p>Assume we've these queries on server, define them just like before we do:</p>
+<pre class="prettyprint source lang-js"><code>var fetchPost = graph.query(`{
+  post(id: $id) {
+    id
+    title
+    text
+  }
+}`)
+
+var fetchComments = graph.query(`{
+  commentsOfPost: comments(postId: $postId) {
+    comment
+    owner {
+      name
+    }
+  }
+}`)</code></pre><p>Normally, we make requests as following:</p>
+<pre class="prettyprint source lang-js"><code>var postId = 123
+
+// This will send a request.
+fetchPost({ id: postId }).then(function (response) {
+  console.log(response.post)
+})
+
+// This also will send a request.
+fetchComments({ postId: postId }).then(function (response) {
+  console.log(response.commentsOfPost)
+})</code></pre><p>This will make two requests:</p>
+<p><img src="./resources/ss1.png" alt="ss1"></p>
+<p>Use <strong><code>.merge(mergeName, variables)</code></strong> command to put them into a merge buffer:</p>
+<pre class="prettyprint source lang-js"><code>var postId = 123
+
+// This won't send a request.
+fetchPost.merge('buildPage', { id: postId }).then(function (response) {
+  console.log(response.post)
+})
+
+// This also won't send a request.
+fetchComments.merge('buildPage', { postId: postId }).then(function (response) {
+  console.log(response.commentsOfPost)
+})</code></pre><p>These will create a buffer with <em>buildPage</em> name, and append the queries to that buffer. You need to use <strong><code>commit(mergeName)</code></strong> to merge the buffer and send to the server, the response will be consolidated:</p>
+<pre class="prettyprint source lang-js"><code>// This will send a merged request:
+graph.commit('buildPage').then(function (response) {
+  // All base fields will be in response return.
+  console.log(response.post)
+  console.log(response.commentsOfPost)
+})</code></pre><p>And this will create only one request:</p>
+<p><img src="./resources/ss2.png" alt="ss2"></p>
+<p>This will create the following merged query generated by <strong>graphql.js</strong>:</p>
+<pre class="prettyprint source lang-graphql"><code>query ($merge024533__id: ID!, $merge141499__postId: ID!) {
+  merge024533_post: {
+    post(id: $merge024533__id) {
+      id
+      title
+      text
+    }
+  }
+  merge141499_commentsOfPost: {
+    comments(postId: $merge141499__postId) {
+      comment
+      owner {
+        name
+      }
+    }
+  }
+}</code></pre><p>And variables will be generated, too:</p>
+<pre class="prettyprint source lang-js"><code>{
+  &quot;merge024533__id&quot;: 123,
+  &quot;merge141499__postId&quot;: 123
+}</code></pre><blockquote>
+<p>The <code>merge{number}</code> aliases won't be passed into your responses, since they will be used for initial seperation.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Important Restriction</strong>: You cannot use multiple root fields using query merging.
+⚠️ <strong>Important Restriction</strong>: Autodeclaration is on by default, do not use <code>alwaysAutodeclare: true</code>.</p>
+</blockquote>
+<h2>Debugging</h2><p>You can pass <code>debug: true</code> to options parameter to get a console output looks like following:</p>
+<pre class="prettyprint source"><code>[graphql]: POST http://localhost:3000/graphql
+  QUERY: query ($email: String!, $password: String!) {
+    auth(email: $email, password: $password) {
+      .. login_auth
+    }
+  }
+
+  fragment info on User { hasPin }
+  fragment login_auth on User { token, ...info }
+
+  VARIABLES: {
+    &quot;email&quot;: &quot;john@doe.com&quot;,
+    &quot;password&quot;: &quot;123123&quot;
+  }
+
+  sending as form url-data</code></pre><h2>Advanced</h2><h3>Using with Vue.js</h3><p>Create a <code>GraphQLProvider.js</code>.</p>
+<pre class="prettyprint source lang-js"><code>import graphql from 'graphql.js';
+
+/* eslint-disable no-underscore-dangle */
+export default {
+  install(Vue, url, options) {
+    Vue.mixin({
+      created() {
+        this._graph = graphql(url, options);
+      },
+    });
+    Object.defineProperty(Vue.prototype, '$graph', {
+      get() {
+        return this._graph;
+      },
+    });
+  },
+};</code></pre><p>And then you can use this with your Vue app:</p>
+<pre class="prettyprint source lang-js"><code>import Vue from 'vue';
+import GraphQLProvider from './GraphQLProvider';
+
+Vue.use(GraphQLProvider, 'http://localhost:3000/graphql', {
+  headers: {
+    // headers...
+  },
+});
+
+// ... in your Vue VM
+data() {
+  return {
+    hello: '',
+  };
+},
+methods: {
+  makeSomeQuery() {
+    this.$graph.query(`{hello}`).then(response => {
+      this.hello = response.hello;
+    });
+  },
+}</code></pre><h3>Change POST Method</h3><p>As default, GraphQL.js makes a POST request. But you can change the behavior by setting <code>asJSON</code>.</p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;http://localhost:3000/graphql&quot;, {
+  asJSON: true
+});</code></pre><h3>Using with <code>graphql-tag</code></h3><p><a href="https://github.com/apollographql/graphql-tag"><code>graphql-tag</code></a> converts GraphQL query strings to AST. You can use <code>graphql-tag</code> with GraphQL.js</p>
+<pre class="prettyprint source lang-js"><code>graph.query(gql`query { name }`)</code></pre><blockquote>
+<p>Using <code>graphql-tag</code> will not allow you to use <em>auto declaration</em> and <em>nested fragments</em> syntaxes since these are not valid query syntax for GraphQL but only for this library.</p>
+</blockquote>
+<h3>Change Url Anywhere</h3><p>You can change url anywhere with <code>setUrl</code> method.</p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;http://localhost:3000/graphql&quot;, {
+  asJSON: true
+});
+
+// Change url
+graph.setUrl('http://www.example.com')
+
+// Run query
+graph.query(`{ name }`)</code></pre><hr>
+<h2>Todo App Example</h2><p>A CRUD ToDo app example code to show how to use GraphQL.js. An implementation can be found at <a href="https://github.com/f/graphql.js-demo"><strong>f/graphql.js-demo</strong></a></p>
+<pre class="prettyprint source lang-js"><code>var graph = graphql(&quot;/graphql&quot;, {
+  alwaysAutodeclare: true,
+  fragments: {
+    todo: `on Todo {
+      id
+      text
+      isCompleted
+    }`
+  }
+})
+
+function getTodos() {
+  return graph.query.run(`allTodos {
+    ...todo
+  }`)
+}
+
+function addTodo(text) {
+  return graph.mutate(`todoAdd(text: $text) {
+    ...todo
+  }`, {
+    text: text
+  })
+}
+
+function setTodo(id, isCompleted) {
+  return graph.mutate(`todoComplete(
+    id: $id,
+    status: $isCompleted
+  ) {
+    ...todo
+  }`, {
+    id: id,
+    isCompleted: isCompleted
+  })
+}
+
+function removeTodo(id) {
+  return graph.mutate(`todoRemove(
+    id: $id
+  ) {
+    ...todo
+  }`, {
+    id: id
+  })
+}</code></pre><h2>License</h2><p>MIT License</p>
+<p>Copyright (c) 2018 Fatih Kadir Akın</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p></article>
+    </section>
+
+
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 00:56:46 GMT+0300 (GMT+03:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

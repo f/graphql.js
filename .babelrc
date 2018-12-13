@@ -1,0 +1,10 @@
+{
+  "env": {
+    "development": {
+      "presets": ["env", "poi/babel"]
+    },
+    "test": {
+      "presets": ["env"]
+    }
+  }
+}
