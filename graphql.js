@@ -403,6 +403,8 @@
         })
       })
       return newResponses
+    }).catch(function (responses) {
+      return { error: true, errors: responses }
     }).finally(function (responses) {
       that._transaction[mergeName] = { query: [], mutation: [] }
       return responses
