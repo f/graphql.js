@@ -11,6 +11,7 @@ const AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/
 
 /**
  * Converts JavaScript primitive types into GraphQL primitive types.
+ * @constant
  */
 const TYPE_CONVERSION_MAP = {
   string: 'String',
