@@ -49,6 +49,13 @@
       console.log('VARIABLES: %c%s\n\nsending as ' + (asJson ? 'json' : 'form url-data'), 'font-weight: bold', JSON.stringify(data.variables, null, 2), data.variables)
       console.groupEnd()
     }
+
+    for (var key in headers) {
+      if (typeof headers[key] === 'function') {
+        headers[key] = headers[key]()
+      }
+    }
+
     if (typeof XMLHttpRequest != 'undefined') {
       var xhr = new XMLHttpRequest
       xhr.open(method, url, true)
