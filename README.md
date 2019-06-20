@@ -121,6 +121,7 @@ var graph = graphql("http://localhost:3000/graphql", {
   headers: {
     // headers
     "Access-Token": "some-access-token"
+    // OR "Access-Token": () => "some-access-token"
   },
   fragments: {
     // fragments, you don't need to say `fragment name`.

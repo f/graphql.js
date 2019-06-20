@@ -31,6 +31,56 @@
     })
   }
 
+  if (typeof XMLHttpRequest !== 'undefined') {
+    function __doRequest(
+      method, url, contentType, accept, headers, body, _onRequestError, callback
+    ) {
+      var xhr = new XMLHttpRequest
+      xhr.open(method, url, true)
+      xhr.setRequestHeader('Content-Type', contentType)
+      xhr.setRequestHeader('Accept', accept)
+      for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
+      xhr.onerror = function () { callback(xhr, xhr.status) }
+      xhr.onload = function () {
+        try {
+          callback(JSON.parse(xhr.responseText), xhr.status)
+        }
+        catch (e) {
+          callback(xhr, xhr.status)
+        }
+      }
+      xhr.send(body)
+    }
+  } else if (typeof require !== 'function') {
+    function __doRequest(
+      method, url, contentType, accept, headers, body, onRequestError, callback
+    ) {
+      var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url)
+      var req = (uri.protocol === 'https:' ? https : http).request({
+        protocol: uri.protocol,
+        hostname: uri.hostname,
+        port: uri.port,
+        path: uri.path,
+        method: method.toUpperCase(),
+        headers: __extend({ 'Content-type': contentType, 'Accept': accept }, headers)
+      }, function (response) {
+        var str = ''
+        response.setEncoding('utf8')
+        response.on('data', function (chunk) { str += chunk })
+        response.on('end', function () {
+          callback(JSON.parse(str), response.statusCode)
+        })
+      })
+      if (typeof onRequestError === 'function') {
+        req.on('error', function (err) {
+          onRequestError(err);
+        });
+      }
+      req.write(body)
+      req.end()
+    }
+  }
+
   function __request(debug, method, url, headers, data, asJson, onRequestError, callback) {
     if (!url) {
       return;
@@ -49,50 +99,23 @@
       console.log('VARIABLES: %c%s\n\nsending as ' + (asJson ? 'json' : 'form url-data'), 'font-weight: bold', JSON.stringify(data.variables, null, 2), data.variables)
       console.groupEnd()
     }
-    if (typeof XMLHttpRequest != 'undefined') {
-      var xhr = new XMLHttpRequest
-      xhr.open(method, url, true)
-      xhr.setRequestHeader('Content-Type', (asJson ? 'application/json' : 'application/x-www-form-urlencoded'))
-      xhr.setRequestHeader('Accept', 'application/json')
-      for (var key in headers) { xhr.setRequestHeader(key, headers[key]) }
-      xhr.onerror = function () { callback(xhr, xhr.status) }
-      xhr.onload = function () {
-        try {
-          callback(JSON.parse(xhr.responseText), xhr.status)
-        }
-        catch (e) {
-          callback(xhr, xhr.status)
-        }
+
+    for (var key in headers) {
+      if (typeof headers[key] === 'function') {
+        headers[key] = headers[key]()
       }
-      xhr.send(body)
-    } else if (typeof require == 'function') {
-      var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url);
-      var req = (uri.protocol === 'https:' ? https : http).request({
-        protocol: uri.protocol,
-        hostname: uri.hostname,
-        port: uri.port,
-        path: uri.path,
-        method: "POST",
-        headers: __extend({
-          'Content-type': (asJson ? 'application/json' : 'application/x-www-form-urlencoded'),
-          'Accept': 'application/json'
-        }, headers)
-      }, function (response) {
-        var str = ''
-        response.setEncoding('utf8')
-        response.on('data', function (chunk) { str += chunk })
-        response.on('end', function () {
-          callback(JSON.parse(str), response.statusCode)
-        })
-      })
-      if (typeof onRequestError === 'function') {
-        req.on('error', function (err) {
-          onRequestError(err);
-        });
-      }
-      req.write(body)
-      req.end()
     }
+
+    __doRequest(
+      method,
+      url,
+      asJson ? 'application/json' : 'application/x-www-form-urlencoded',
+      'application/json',
+      headers,
+      body,
+      onRequestError,
+      callback
+    )
   }
 
   function __isTagCall(strings) {
