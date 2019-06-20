@@ -99,3 +99,4 @@ assert.equal(client.getUrl(), null)
 var newUrl = 'https://api.github.com/graphql'
 client.setUrl(newUrl)
 assert.equal(client.getUrl(), newUrl)
+
