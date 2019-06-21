@@ -205,7 +205,7 @@
       var path = fragment.replace(fragmentRegexp, function (_, $m) {return $m})
       var fragment = that.fragmentPath(fragments, path)
       if (fragment) {
-        var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path))
+        var pathRegexp = new RegExp(fragmentRegexp.source.replace(/\((.*)\)/, path) + '$')
         if (fragment.match(pathRegexp)) {
           throw new Error("Recursive fragment usage detected on " + path + ".")
         }
