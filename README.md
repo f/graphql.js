@@ -16,6 +16,7 @@
 
 ### Features
 
+- Too small, 4k gzipped.
 - No dependencies, plain vanilla JavaScript.
 - Plug & Play.
 - Isomorphic.
