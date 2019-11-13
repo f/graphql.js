@@ -252,7 +252,8 @@
       var types = []
       for (var key in variables) {
         var value = variables[key]
-        var keyAndType = key.split("!")
+        var keyAndType = key.split(/^(.*?)\!/).slice(1)
+        keyAndType[1] = keyAndType[1].replace(/(.*?)\!$/, "$1")
         var mapping = typeMap[typeof(value)]
         var mappedType = typeof(mapping) === "function" ? mapping(value) : mapping
         if (!key.match("!") && keyAndType[0].match(/_?id/i)) {
