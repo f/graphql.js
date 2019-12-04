@@ -68,6 +68,12 @@ console.log(users)
 
 You can download `graphql.js` directly, or you can use **Bower** or **NPM**.
 
+#### CDN
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/graphql.js@0.6.6/graphql.min.js"></script>
+```
+
 #### Download for Browser
 
 - [Development Version - 12kb](https://raw.githubusercontent.com/f/graphql.js/master/graphql.js)
