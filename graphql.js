@@ -52,32 +52,52 @@
       xhr.send(body)
     }
   } else if (typeof require === 'function') {
-    function __doRequest(
-      method, url, contentType, accept, headers, body, onRequestError, callback
-    ) {
-      var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url)
-      var req = (uri.protocol === 'https:' ? https : http).request({
-        protocol: uri.protocol,
-        hostname: uri.hostname,
-        port: uri.port,
-        path: uri.path,
-        method: method.toUpperCase(),
-        headers: __extend({ 'Content-type': contentType, 'Accept': accept }, headers)
-      }, function (response) {
-        var str = ''
-        response.setEncoding('utf8')
-        response.on('data', function (chunk) { str += chunk })
-        response.on('end', function () {
-          callback(JSON.parse(str), response.statusCode)
-        })
-      })
-      if (typeof onRequestError === 'function') {
-        req.on('error', function (err) {
-          onRequestError(err);
+    var isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'
+
+    if (isReactNative) {
+      function __doRequest(
+        method, url, contentType, accept, headers, body, onRequestError, callback
+      ) {
+        fetch(url, {
+          method: method,
+          mode: 'cors',
+          headers: headers,
+          redirect: 'follow',
+          body: body
+        }).then(function (response) {
+          callback(response.json(), response.status)
+        }).catch(function (e) {
+          onRequestError(e)
         });
       }
-      req.write(body)
-      req.end()
+    } else {
+      function __doRequest(
+        method, url, contentType, accept, headers, body, onRequestError, callback
+      ) {
+        var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url)
+        var req = (uri.protocol === 'https:' ? https : http).request({
+          protocol: uri.protocol,
+          hostname: uri.hostname,
+          port: uri.port,
+          path: uri.path,
+          method: method.toUpperCase(),
+          headers: __extend({ 'Content-type': contentType, 'Accept': accept }, headers)
+        }, function (response) {
+          var str = ''
+          response.setEncoding('utf8')
+          response.on('data', function (chunk) { str += chunk })
+          response.on('end', function () {
+            callback(JSON.parse(str), response.statusCode)
+          })
+        })
+        if (typeof onRequestError === 'function') {
+          req.on('error', function (err) {
+            onRequestError(err);
+          });
+        }
+        req.write(body)
+        req.end()
+      }
     }
   }
 
@@ -138,10 +158,10 @@
       throw new Error("You cannot create GraphQLClient instance. Please call GraphQLClient as function.")
     }
     if (!options)
-    options = {}
+      options = {}
 
     if (!options.fragments)
-    options.fragments = {}
+      options.fragments = {}
 
     this.url = url
     this.options = options || {}
@@ -168,8 +188,8 @@
     for (name in object) {
       if (object.hasOwnProperty(name)) {
         typeof object[name] == "object"
-        ? this.flatten(object[name], prefix + name + FRAGMENT_SEPERATOR, out)
-        : out[prefix + name] = object[name]
+          ? this.flatten(object[name], prefix + name + FRAGMENT_SEPERATOR, out)
+          : out[prefix + name] = object[name]
       }
     }
     return out
@@ -344,9 +364,9 @@
         if (!type) {
           type = that.parseType(query)
           query = query.trim()
-            .replace(/^(query|mutation|subscription)\s*/, '').trim()
-            .replace(GraphQLClient.AUTODECLARE_PATTERN, '').trim()
-            .replace(/^\{|\}$/g, '')
+          .replace(/^(query|mutation|subscription)\s*/, '').trim()
+          .replace(GraphQLClient.AUTODECLARE_PATTERN, '').trim()
+          .replace(/^\{|\}$/g, '')
         }
         if (!originalQuery) {
           originalQuery = query
