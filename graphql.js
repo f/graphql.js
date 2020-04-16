@@ -51,7 +51,7 @@
       }
       xhr.send(body)
     }
-  } else if (typeof require === 'function') {
+  } else if (typeof window !== 'object' && typeof require === 'function') {
     function __doRequest(
       method, url, contentType, accept, headers, body, onRequestError, callback
     ) {
