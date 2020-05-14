@@ -152,7 +152,7 @@
   }
 
   // "fragment auth.login" will be "fragment auth_login"
-  FRAGMENT_SEPERATOR = "_"
+  var FRAGMENT_SEPERATOR = "_"
 
   // The autodeclare keyword.
   GraphQLClient.AUTODECLARE_PATTERN = /\(@autodeclare\)|\(@autotype\)/g
