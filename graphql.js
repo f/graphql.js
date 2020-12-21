@@ -31,8 +31,10 @@
     })
   }
 
+  var __doRequest
+
   if (typeof XMLHttpRequest !== 'undefined') {
-    function __doRequest(
+    __doRequest = function (
       method, url, contentType, accept, headers, body, _onRequestError, callback
     ) {
       var xhr = new XMLHttpRequest
@@ -52,7 +54,7 @@
       xhr.send(body)
     }
   } else if (typeof require === 'function') {
-    function __doRequest(
+    __doRequest = function (
       method, url, contentType, accept, headers, body, onRequestError, callback
     ) {
       var http = require('http'), https = require('https'), URL = require('url'), uri = URL.parse(url)
@@ -318,7 +320,7 @@
         if (!requestOptions) requestOptions = {}
         if (!variables) variables = {}
         var fragmentedQuery = that.buildQuery(query, variables)
-        headers = __extend((that.options.headers||{}), (requestOptions.headers||{}))
+        var headers = __extend((that.options.headers||{}), (requestOptions.headers||{}))
 
         return new Promise(function (resolve, reject) {
           __request(debug, that.options.method || "post", that.getUrl(), headers, {
@@ -504,7 +506,6 @@
   }
 
   GraphQLClient.prototype.ql = function (strings) {
-    var that = this
     fragments = Array.prototype.slice.call(arguments, 1)
     fragments = fragments.map(function (fragment) {
       if (typeof fragment == 'string') {
@@ -529,7 +530,7 @@
     } else {
       root.graphql = factory(root.GraphQLClient)
     }
-  }(this, function () {
+  }(this || self, function () {
     return GraphQLClient
   }))
 })()
