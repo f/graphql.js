@@ -12,12 +12,15 @@
     "graphql.min.js"
   ],
   "scripts": {
-    "test": "make test",
-    "build": "make build"
+    "test": "node test/test.js",
+    "build": "uglifyjs graphql.js -o graphql.min.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/f/graphql-client.git"
+  },
+  "devDependencies": {
+    "uglify-js": "^3.14.5"
   },
   "keywords": [
     "graphql",
