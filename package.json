@@ -12,12 +12,17 @@
     "graphql.min.js"
   ],
   "scripts": {
-    "test": "make test",
-    "build": "make build"
+    "test": "jest --coverage",
+    "build": "uglifyjs graphql.js -o graphql.min.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/f/graphql-client.git"
+  },
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "jest-mock-random": "^1.1.1",
+    "uglify-js": "^3.14.5"
   },
   "keywords": [
     "graphql",

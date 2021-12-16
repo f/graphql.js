@@ -398,9 +398,12 @@
           mergedVariables[method][variable] = merge.variables[matchingKey]
           return '$' + variable.split('!')[0]
         })
+        // remove the wrapping {}
+        query = query.replace(/^\{|\}\s*$/g, '').trim()
+
         var alias = query.trim().match(/^[^\(]+\:/)
         if (!alias) {
-          alias = query.replace(/^\{|\}$/gm, '').trim().match(/^[^\(\{]+/)[0] + ':'
+          alias = query.match(/^[^\(\{]+/)[0] + ':'
         } else {
           query = query.replace(/^[^\(]+\:/, '')
         }

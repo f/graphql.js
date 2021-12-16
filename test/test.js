@@ -1,38 +1,93 @@
-var assert = require('assert')
-var graphql = require('../graphql.js')
+// to fake out graphql to use XHR so we can stub it
+global.XMLHttpRequest = null;
 
-var client = graphql(null, {
-	method: 'put',
-	fragments: {
-		user: 'on User {name}',
-		auth: {
-			user: 'on User {token, ...user}'
-		}
-	}
-})
+let {mockRandom} = require('jest-mock-random');
+let graphql = require('../graphql.js');
 
-client.fragment({
-	auth: {
-		error: 'on Error {messages}'
-	}
-})
-assert.equal(typeof client, 'function')
-assert.equal(
-	client.fragment('auth.error'),
-	'fragment auth_error on Error {messages}'
-)
-assert.equal(client.getOptions().method, 'put')
-assert.equal(client.fragments().user, '\nfragment user on User {name}')
-assert.equal(
-	client.fragments().auth_user,
-	'\nfragment auth_user on User {token, ...user}'
-)
-assert.equal(
-	client.fragments().auth_error,
-	'\nfragment auth_error on Error {messages}'
-)
+// Mock XMLHttpRequest
+function mockXHR(status, data) {
+    const xhrMockObj = {
+        open: jest.fn(),
+        send: jest.fn(),
+        setRequestHeader: jest.fn(),
+        onload: jest.fn(),
+        readyState: 4,
+        status: status,
+        responseText: JSON.stringify(data),
+    };
 
-var queryIn = `query (@autodeclare) {
+    const xhrMockClass = () => xhrMockObj;
+
+    global.XMLHttpRequest = jest.fn().mockImplementation(xhrMockClass);
+
+    xhrMockObj.send = (body) => {
+        xhrMockObj.sentBody = body;
+        xhrMockObj.onload();
+    }
+    return xhrMockObj;
+}
+
+describe('graphql.js', () => {
+    let client = null;
+
+    beforeEach(() => {
+        client = graphql(null, {
+            method: 'put',
+            asJSON: true,
+            fragments: {
+                user: 'on User {name}',
+                auth: {
+                    user: 'on User {token, ...user}'
+                }
+            }
+        });
+        client.fragment({
+            auth: {
+                error: 'on Error {messages}'
+            }
+        });
+    });
+
+    it('client should be a function', () => {
+        expect(typeof client).toBe('function');
+    });
+
+    describe('.fragment()', () => {
+        it('registers a new fragment', () => {
+
+            expect(client.fragment('auth.error')).toBe(
+                'fragment auth_error on Error {messages}'
+            );
+        });
+    });
+
+    describe('.getOptions()', () => {
+        it('configures the method as requested', () => {
+            expect(client.getOptions().method).toBe('put');
+        });
+    });
+
+    describe('.fragments()', () => {
+        it('returns an object with the defined fragments as properties', () => {
+            expect(client.fragments()).toStrictEqual(
+                expect.objectContaining({
+                    user: '\nfragment user on User {name}',
+                    auth_user: '\nfragment auth_user on User {token, ...user}',
+                })
+            );
+        });
+
+        it('returns returns new fragments registered as well', () => {
+            expect(client.fragments()).toStrictEqual(
+                expect.objectContaining({
+                    auth_error: '\nfragment auth_error on Error {messages}',
+                })
+            );
+        });
+    });
+
+    describe('@autodeclare queries', () => {
+        let queryIn = `query (@autodeclare) {
 	user(name: $name, bool: $bool, int: $int, id: $id) {
 		...auth.user
 		...auth.error
@@ -40,9 +95,10 @@ var queryIn = `query (@autodeclare) {
 	x {
 		... auth.user
 	}
-}`
+}`;
 
-var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!, $id: ID!, $user_id: Int!, $postID: ID!, $custom_id: CustomType!, $customId: ID!, $target: [ID!]!) {
+        it('mixes in the requested fragments and sets the data types', () => {
+            var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!, $id: ID!, $user_id: Int!, $postID: ID!, $custom_id: CustomType!, $customId: ID!, $target: [ID!]!) {
 	user(name: $name, bool: $bool, int: $int, id: $id) {
 		... auth_user
 		... auth_error
@@ -56,56 +112,165 @@ fragment user on User {name}
 
 fragment auth_user on User {token, ...user}
 
-fragment auth_error on Error {messages}`
+fragment auth_error on Error {messages}`;
 
-assert.equal(
-	client.buildQuery(queryIn, {
-		name: 'fatih',
-		bool: true,
-		int: 2,
-		float: 2.3,
-		id: 1,
-		'user_id!': 2,
-		'postID': '45af67cd',
-		'custom_id!CustomType': '1',
-		'customId': '1',
-		'target![ID!]': ['Q29uZ3JhdHVsYXRpb25z']
-	}),
-	expectedQuery
-)
+            let query = client.buildQuery(queryIn, {
+                name: 'fatih',
+                bool: true,
+                int: 2,
+                float: 2.3,
+                id: 1,
+                'user_id!': 2,
+                'postID': '45af67cd',
+                'custom_id!CustomType': '1',
+                'customId': '1',
+                'target![ID!]': ['Q29uZ3JhdHVsYXRpb25z']
+            });
 
-assert.equal(
-	typeof client.query(`($email: String!, $password: String!) {
-		auth(email: $email, password: $password) {
-			... on User {
-				token
-			}
-		}
-	}`),
-	'function'
-)
+            expect(query).toBe(expectedQuery);
+        });
+    });
 
-/**
-* URL UPDATE TESTING
-*/
+    describe('.query()', () => {
+        it('returns a function', () => {
+            let query = client.query(`($email: String!, $password: String!) {
+                auth(email: $email, password: $password) {
+                    ... on User {
+                        token
+                    }
+                }
+            }`);
+            expect(typeof query).toBe('function');
+        });
+    });
 
-client.headers({ 'User-Agent': 'Awesome-Octocat-App' })
-var query = client.query(`
-repository(owner:"f", name:"graphql.js") {
-	issues(last:20, states:CLOSED) {
-		edges {
-			node {
-				title
-				url
-			}
-		}
-	}
-}`)
+    describe('.getUrl()/setUrl()', () => {
+        it('updates the url', () => {
+            client.headers({'User-Agent': 'Awesome-Octocat-App'});
 
-// Checking Old URL
-assert.equal(client.getUrl(), null)
+            client.query(`
+                repository(owner:"f", name:"graphql.js") {
+                    issues(last:20, states:CLOSED) {
+                        edges {
+                            node {
+                                title
+                                url
+                            }
+                        }
+                    }
+                }`);
 
-// Checking New URL
-var newUrl = 'https://api.github.com/graphql'
-client.setUrl(newUrl)
-assert.equal(client.getUrl(), newUrl)
+            // check old URL
+            expect(client.getUrl()).toBeNull();
+            // set new URL
+            var newUrl = 'https://api.github.com/graphql'
+            client.setUrl(newUrl)
+            expect(client.getUrl()).toBe(newUrl);
+        })
+    });
+
+    describe('query testing', () => {
+        let fetchPost = null;
+        let fetchComments = null;
+
+        beforeEach(() => {
+            client.setUrl('https://example.org');
+            fetchPost = client.query(`{
+  post(id: $id) {
+    id
+    title
+    text
+  }
+}`);
+
+            fetchComments = client.query(`{
+  commentsOfPost: comments(postId: $postId) {
+    comment
+    owner {
+      name
+    }
+  }
+}`);
+        });
+
+        describe('when executing the queries normally', () => {
+            it('sends a network request right away', () => {
+                let xhr = mockXHR(200, {});
+                xhr.send = jest.fn();
+                fetchPost({id: 123});
+                expect(xhr.send).toHaveBeenCalled();
+            });
+
+            it('resolves the response in the promise', () => {
+                let data = {post: {id: 123, title: 'title', text: 'text'}};
+                mockXHR(200, data);
+                return expect(fetchPost({id: 123})).resolves.toStrictEqual(data);
+            });
+
+            it('sends the correctly formatted request to the server', () => {
+                let xhr = mockXHR(200, {});
+                return fetchPost({id: 123}).then(() => {
+                    expect(JSON.parse(xhr.sentBody)).toStrictEqual({
+                        "query": "query {\n  post(id: $id) {\n    id\n    title\n    text\n  }\n} ",
+                        "variables": {"id": 123}
+                    });
+                });
+            });
+        });
+
+        describe('.merge()/.commit()', () => {
+            it('does not send the request when using merge', () => {
+                let xhr = mockXHR(200, {});
+                xhr.send = jest.fn();
+                fetchPost.merge('buildPage', {id: 123});
+                expect(xhr.send).not.toHaveBeenCalled();
+            });
+
+            it('sends the request when commit is called', () => {
+                let xhr = mockXHR(200, {});
+                xhr.send = jest.fn();
+                fetchPost.merge('buildPage', {id: 123});
+                expect(xhr.send).not.toHaveBeenCalled();
+
+                client.commit('buildPage');
+                expect(xhr.send).toHaveBeenCalled();
+            });
+
+            it('sends the correctly formatted request to the server', () => {
+                let xhr = mockXHR(200, {});
+                fetchPost.merge('buildPage', {id: 123});
+                mockRandom(0.1234);
+                return client.commit('buildPage').then(() => {
+                    expect(JSON.parse(xhr.sentBody)).toStrictEqual({
+                        "query": "query ($merge1234__id: ID!) {\nmerge1234_post:post(id: $merge1234__id) {\n    id\n    title\n    text\n  }\n }",
+                        "variables": {
+                            "merge1234__id": 123
+                        }
+                    });
+                });
+            });
+
+            describe('when merging multiple queries', () => {
+                it('sends the correctly formatted merged request to the server', () => {
+                    let xhr = mockXHR(200, {});
+                    let postId = 123;
+                    fetchPost.merge('buildPage', {id: postId});
+                    fetchComments.merge('buildPage', {postId: postId});
+                    mockRandom(0.1234);
+                    return client.commit('buildPage').then(() => {
+                        expect(JSON.parse(xhr.sentBody)).toStrictEqual({
+                            "query": "query ($merge1234__id: ID!, $merge1234__postId: ID!) {\n"
+                                + "merge1234_post:post(id: $merge1234__id) {\n    id\n    title\n    text\n  }\n"
+                                + "merge1234_commentsOfPost: comments(postId: $merge1234__postId) {\n    comment\n    owner {\n      name\n    }\n  }\n"
+                                +" }",
+                            "variables": {
+                                "merge1234__id": 123,
+                                "merge1234__postId": 123,
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
