@@ -108,6 +108,10 @@
       }
     }
 
+    if (method == 'GET') {
+      url += '?' + body
+    }
+
     __doRequest(
       method,
       url,
