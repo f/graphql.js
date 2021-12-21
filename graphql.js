@@ -191,8 +191,7 @@
   * {a: {b: {c: 1, d: 2}}}, "a.b.c" => 1
   */
   GraphQLClient.prototype.fragmentPath = function (fragments, path) {
-    var getter = new Function("fragments", "return fragments." + path.replace(/\./g, FRAGMENT_SEPERATOR))
-    var obj = getter(fragments)
+    var obj = fragments[path.replace(/\./g, FRAGMENT_SEPERATOR)]
     if (path != "on" && (!obj || typeof obj != "string")) {
       throw new Error("Fragment " + path + " not found")
     }
