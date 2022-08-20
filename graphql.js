@@ -31,6 +31,17 @@
     })
   }
 
+  function __handleMethod(method, url, data, asJson) {
+    var cleaned = {url: url};
+    var isGet = method.toUpperCase() === 'GET';
+    if (asJson && !isGet) {
+      cleaned.body = JSON.stringify({query: data.query, variables: data.variables});
+    } else {
+      cleaned.url = url + '?' + "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
+    }
+    return cleaned;
+  }
+
   var __doRequest
 
   if (typeof XMLHttpRequest !== 'undefined') {
@@ -87,11 +98,8 @@
     if (!url) {
       return;
     }
-    if (asJson) {
-      var body = JSON.stringify({query: data.query, variables: data.variables});
-    } else {
-      var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
-    }
+    var cleaned = __handleMethod(method, url, data, asJson);
+
     if (debug) {
       console.groupCollapsed('[graphql]: '
         + method.toUpperCase() + ' ' + url + ': '
@@ -110,11 +118,11 @@
 
     __doRequest(
       method,
-      url,
+      cleaned.url,
       asJson ? 'application/json' : 'application/x-www-form-urlencoded',
       'application/json',
       headers,
-      body,
+      cleaned.body,
       onRequestError,
       callback
     )

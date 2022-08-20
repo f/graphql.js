@@ -200,6 +200,19 @@ fragment auth_error on Error {messages}`;
 
         set('url', () => 'https://example.org');
 
+        describe('when method is GET', () => {
+            set('method', () => 'get');
+
+            it('makes the request passing the parameters as query arguments', () => {
+                let xhr = mockXHR(200, {});
+                xhr.send = jest.fn();
+                fetchPost({id: 123});
+                expect(xhr.send).toHaveBeenCalledWith(undefined);
+                expect(xhr.open).toHaveBeenCalledWith(method, expect.stringMatching(url), true)
+                expect(xhr.open).toHaveBeenCalledWith(method, expect.stringMatching(/\?query=.+&variables=/), true)
+            });
+        });
+
         describe('when executing the queries normally', () => {
             it('sends a network request right away', () => {
                 let xhr = mockXHR(200, {});
