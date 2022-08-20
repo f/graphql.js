@@ -20,7 +20,9 @@
     "url": "git+https://github.com/f/graphql-client.git"
   },
   "devDependencies": {
+    "babel-runtime": "^6.26.0",
     "jest": "^27.4.5",
+    "jest-plugin-set": "^2.9.0",
     "jest-mock-random": "^1.1.1",
     "uglify-js": "^3.14.5"
   },
@@ -36,5 +38,10 @@
   "bugs": {
     "url": "https://github.com/f/graphql-client/issues"
   },
-  "homepage": "https://github.com/f/graphql-client#readme"
+  "homepage": "https://github.com/f/graphql-client#readme",
+  "jest": {
+    "setupFiles": [
+      "jest-plugin-set/setup"
+    ]
+  }
 }
