@@ -31,6 +31,17 @@
     })
   }
 
+  function __handleMethod(method, url, data, asJson) {
+    var cleaned = {url: url};
+    var isGet = method.toUpperCase() === 'GET';
+    if (asJson && !isGet) {
+      cleaned.body = JSON.stringify({query: data.query, variables: data.variables});
+    } else {
+      cleaned.url = url + '?' + "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
+    }
+    return cleaned;
+  }
+
   var __doRequest
 
   if (typeof XMLHttpRequest !== 'undefined') {
@@ -87,11 +98,8 @@
     if (!url) {
       return;
     }
-    if (asJson) {
-      var body = JSON.stringify({query: data.query, variables: data.variables});
-    } else {
-      var body = "query=" + encodeURIComponent(data.query) + "&variables=" + encodeURIComponent(JSON.stringify(data.variables))
-    }
+    var cleaned = __handleMethod(method, url, data, asJson);
+
     if (debug) {
       console.groupCollapsed('[graphql]: '
         + method.toUpperCase() + ' ' + url + ': '
@@ -110,11 +118,11 @@
 
     __doRequest(
       method,
-      url,
+      cleaned.url,
       asJson ? 'application/json' : 'application/x-www-form-urlencoded',
       'application/json',
       headers,
-      body,
+      cleaned.body,
       onRequestError,
       callback
     )
@@ -191,8 +199,7 @@
   * {a: {b: {c: 1, d: 2}}}, "a.b.c" => 1
   */
   GraphQLClient.prototype.fragmentPath = function (fragments, path) {
-    var getter = new Function("fragments", "return fragments." + path.replace(/\./g, FRAGMENT_SEPERATOR))
-    var obj = getter(fragments)
+    var obj = fragments[path.replace(/\./g, FRAGMENT_SEPERATOR)]
     if (path != "on" && (!obj || typeof obj != "string")) {
       throw new Error("Fragment " + path + " not found")
     }

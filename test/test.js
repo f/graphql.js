@@ -1,4 +1,4 @@
-// to fake out graphql to use XHR so we can stub it
+// to fake out graphql to use XHR, so we can stub it
 global.XMLHttpRequest = null;
 
 let {mockRandom} = require('jest-mock-random');
@@ -27,12 +27,13 @@ function mockXHR(status, data) {
     return xhrMockObj;
 }
 
+/* global client, method, url, fetchPost, fetchComments */
 describe('graphql.js', () => {
-    let client = null;
-
-    beforeEach(() => {
-        client = graphql(null, {
-            method: 'put',
+    set('url', () => null);
+    set('method', () => 'put');
+    set('client', () =>
+        graphql(url, {
+            method: method,
             asJSON: true,
             fragments: {
                 user: 'on User {name}',
@@ -40,13 +41,7 @@ describe('graphql.js', () => {
                     user: 'on User {token, ...user}'
                 }
             }
-        });
-        client.fragment({
-            auth: {
-                error: 'on Error {messages}'
-            }
-        });
-    });
+        }));
 
     it('client should be a function', () => {
         expect(typeof client).toBe('function');
@@ -54,6 +49,11 @@ describe('graphql.js', () => {
 
     describe('.fragment()', () => {
         it('registers a new fragment', () => {
+            client.fragment({
+                auth: {
+                    error: 'on Error {messages}'
+                }
+            });
 
             expect(client.fragment('auth.error')).toBe(
                 'fragment auth_error on Error {messages}'
@@ -77,7 +77,13 @@ describe('graphql.js', () => {
             );
         });
 
-        it('returns returns new fragments registered as well', () => {
+        it('returns new registered fragments as well', () => {
+            client.fragment({
+                auth: {
+                    error: 'on Error {messages}'
+                }
+            });
+
             expect(client.fragments()).toStrictEqual(
                 expect.objectContaining({
                     auth_error: '\nfragment auth_error on Error {messages}',
@@ -98,6 +104,12 @@ describe('graphql.js', () => {
 }`;
 
         it('mixes in the requested fragments and sets the data types', () => {
+            client.fragment({
+                auth: {
+                    error: 'on Error {messages}'
+                }
+            });
+
             var expectedQuery = `query ($name: String!, $bool: Boolean!, $int: Int!, $float: Float!, $id: ID!, $user_id: Int!, $postID: ID!, $custom_id: CustomType!, $customId: ID!, $target: [ID!]!) {
 	user(name: $name, bool: $bool, int: $int, id: $id) {
 		... auth_user
@@ -170,27 +182,35 @@ fragment auth_error on Error {messages}`;
     });
 
     describe('query testing', () => {
-        let fetchPost = null;
-        let fetchComments = null;
-
-        beforeEach(() => {
-            client.setUrl('https://example.org');
-            fetchPost = client.query(`{
+        set('fetchPost', () => client.query(`{
   post(id: $id) {
     id
     title
     text
   }
-}`);
-
-            fetchComments = client.query(`{
+}`));
+        set('fetchComments', () => client.query(`{
   commentsOfPost: comments(postId: $postId) {
     comment
     owner {
       name
     }
   }
-}`);
+}`));
+
+        set('url', () => 'https://example.org');
+
+        describe('when method is GET', () => {
+            set('method', () => 'get');
+
+            it('makes the request passing the parameters as query arguments', () => {
+                let xhr = mockXHR(200, {});
+                xhr.send = jest.fn();
+                fetchPost({id: 123});
+                expect(xhr.send).toHaveBeenCalledWith(undefined);
+                expect(xhr.open).toHaveBeenCalledWith(method, expect.stringMatching(url), true)
+                expect(xhr.open).toHaveBeenCalledWith(method, expect.stringMatching(/\?query=.+&variables=/), true)
+            });
         });
 
         describe('when executing the queries normally', () => {
